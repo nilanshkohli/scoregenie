@@ -243,23 +243,29 @@ Format as clear, actionable markdown.`,
         </div>
       )}
 
-      {/* Add Topics Section */}
-      <Card className="p-5">
-        <button
-          onClick={() => setShowAddTopics(!showAddTopics)}
-          className="flex items-center gap-2 w-full text-left"
-        >
-          <Plus className="h-4 w-4 text-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            {topics.length > 0 ? `Topics (${topics.length})` : "Add Topics to Get Started"}
-          </span>
-          <span className="text-xs text-muted-foreground ml-auto">
-            {showAddTopics ? "Hide" : "Show"}
-          </span>
-        </button>
+      {/* Setup & Topics — Combined */}
+      <Card className="p-5 space-y-5">
+        <h3 className="text-sm font-semibold text-foreground">
+          {hasPlan ? "Update & Regenerate Plan" : "Setup Study Plan"}
+        </h3>
 
-        {(showAddTopics || topics.length === 0) && (
-          <div className="mt-4 space-y-4">
+        {/* Step 1: Subject */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">1. Subject</label>
+          <Input
+            placeholder="e.g. Mathematics, Physics, History"
+            value={subjectName}
+            onChange={(e) => onSubjectNameChange(e.target.value)}
+          />
+        </div>
+
+        {/* Step 2: Topics */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
+            2. Topics {topics.length > 0 && `(${topics.length})`}
+          </label>
+
+          <div className="space-y-3">
             <div className="flex gap-2">
               <Input
                 placeholder="Topic name"
@@ -281,25 +287,34 @@ Format as clear, actionable markdown.`,
               </Button>
             </div>
 
-            <div>
-              <p className="text-xs text-muted-foreground mb-2">
-                Bulk add — one per line: Topic Name, Marks (e.g. "Thermodynamics, 10")
-              </p>
-              <Textarea
-                placeholder={"Kinematics, 8\nThermodynamics, 12\nOptics, 10"}
-                value={bulkText}
-                onChange={(e) => setBulkText(e.target.value)}
-                rows={4}
-              />
-              <Button onClick={handleBulkAdd} disabled={addingTopics} className="mt-2" size="sm">
-                Add All
-              </Button>
-            </div>
+            <button
+              onClick={() => setShowAddTopics(!showAddTopics)}
+              className="text-xs text-primary hover:underline"
+            >
+              {showAddTopics ? "Hide bulk add" : "Bulk add topics"}
+            </button>
+
+            {showAddTopics && (
+              <div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  One per line: Topic Name, Marks (e.g. "Thermodynamics, 10")
+                </p>
+                <Textarea
+                  placeholder={"Kinematics, 8\nThermodynamics, 12\nOptics, 10"}
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  rows={3}
+                />
+                <Button onClick={handleBulkAdd} disabled={addingTopics} className="mt-2" size="sm">
+                  Add All
+                </Button>
+              </div>
+            )}
 
             {topics.length > 0 && (
-              <div className="divide-y divide-border max-h-48 overflow-y-auto">
+              <div className="divide-y divide-border max-h-40 overflow-y-auto rounded-md border border-border">
                 {topics.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between py-2">
+                  <div key={t.id} className="flex items-center justify-between py-1.5 px-3">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-foreground">{t.name}</span>
                       <span className="text-xs text-muted-foreground">{t.marks_weightage}m</span>
@@ -317,60 +332,47 @@ Format as clear, actionable markdown.`,
               </div>
             )}
           </div>
-        )}
-      </Card>
-
-      {/* Generate Study Plan */}
-      <Card className="p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">
-          {hasPlan ? "Regenerate Study Plan" : "Generate Study Plan"}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Subject</label>
-            <Input
-              placeholder="e.g. Mathematics, Physics, History"
-              value={subjectName}
-              onChange={(e) => onSubjectNameChange(e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Target Score (%)</label>
-            <Input
-              type="number"
-              value={targetScore}
-              onChange={(e) => onTargetScoreChange(e.target.value)}
-              min={1}
-              max={100}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Exam Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn("w-full justify-start text-left font-normal", !examDate && "text-muted-foreground")}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {examDate ? format(examDate, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={examDate}
-                  onSelect={setExamDate}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
         </div>
 
-        <Button onClick={generatePlan} disabled={loading || !examDate} className="w-full" size="lg">
+        {/* Step 3: Exam Date */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">3. Exam Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn("w-full justify-start text-left font-normal", !examDate && "text-muted-foreground")}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {examDate ? format(examDate, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={examDate}
+                onSelect={setExamDate}
+                disabled={(date) => date < new Date()}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Step 4: Target Score */}
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">4. Target Score (%)</label>
+          <Input
+            type="number"
+            value={targetScore}
+            onChange={(e) => onTargetScoreChange(e.target.value)}
+            min={1}
+            max={100}
+          />
+        </div>
+
+        <Button onClick={generatePlan} disabled={loading || !examDate || topics.length === 0} className="w-full" size="lg">
           {loading ? (
             <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Plan...</>
           ) : hasPlan ? (
