@@ -211,7 +211,7 @@ Format as clear, actionable markdown.`,
           {/* Subject & Exam Info Card */}
           <Card className="p-4 col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Study Details</span>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Exam Details</span>
             </div>
             <div className="space-y-1">
               <p className="text-lg font-bold text-foreground truncate">{subjectName || "Physics"}</p>
