@@ -2,14 +2,12 @@ import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTopics, Topic } from "@/lib/api";
 import AppSidebar from "@/components/AppSidebar";
-import SyllabusInput from "@/components/SyllabusInput";
 import LearningLab from "@/components/LearningLab";
 import ReviseMode from "@/components/ReviseMode";
 import ExamSimulator from "@/components/ExamSimulator";
-import ProgressOverview from "@/components/ProgressOverview";
 import StudyPlanner from "@/components/StudyPlanner";
 
-type View = "planner" | "syllabus" | "learn" | "revise" | "exam" | "progress";
+type View = "planner" | "learn" | "revise" | "exam";
 
 const Index = () => {
   const [view, setView] = useState<View>("planner");
@@ -50,10 +48,7 @@ const Index = () => {
       />
       <main className="flex-1 overflow-y-auto p-6">
         {view === "planner" && (
-          <StudyPlanner topics={topics} onNavigate={handleNavigate} />
-        )}
-        {view === "syllabus" && (
-          <SyllabusInput topics={topics} onRefresh={refresh} />
+          <StudyPlanner topics={topics} onNavigate={handleNavigate} onRefresh={refresh} />
         )}
         {view === "learn" && selectedTopic && (
           <LearningLab
@@ -74,9 +69,6 @@ const Index = () => {
         )}
         {view === "exam" && (
           <ExamSimulator topics={topics} />
-        )}
-        {view === "progress" && (
-          <ProgressOverview topics={topics} />
         )}
       </main>
     </div>
