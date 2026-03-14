@@ -207,24 +207,36 @@ Format as clear, actionable markdown.`,
 
       {/* Progress stats */}
       {topics.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {/* Subject & Exam Info Card */}
-          <Card className="p-4 col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Exam Details</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {/* Exam Details Card - Distinct styling */}
+          <Card className="p-5 col-span-2 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-6 w-6 rounded-md bg-primary/20 flex items-center justify-center">
+                <Target className="h-3.5 w-3.5 text-primary" />
+              </div>
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Exam Details</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-lg font-bold text-foreground truncate">{subjectName || "Physics"}</p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span>Target: <span className="font-medium text-foreground">{targetScore || 80}%</span></span>
-                <span>•</span>
-                <span>Exam: {examDate ? format(examDate, "MMM d") : "Not set"}</span>
+            <div className="space-y-2">
+              <p className="text-xl font-bold text-foreground">{subjectName || "Physics"}</p>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">Target:</span>
+                  <span className="font-semibold text-foreground">{targetScore || 80}%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-muted-foreground">Exam:</span>
+                  <span className="font-semibold text-foreground">{examDate ? format(examDate, "MMM d, yyyy") : "Not set"}</span>
+                </div>
               </div>
             </div>
           </Card>
-          <Card className="p-4">
+
+          {/* Progress Cards - Common styling */}
+          <Card className="p-4 bg-muted/50 border-muted">
             <div className="flex items-center gap-2 mb-1">
-              <Target className="h-4 w-4 text-primary" />
+              <div className="h-5 w-5 rounded bg-background flex items-center justify-center">
+                <Target className="h-3 w-3 text-primary" />
+              </div>
               <span className="text-xs font-medium text-muted-foreground">Score Potential</span>
             </div>
             <p className="text-2xl font-bold text-foreground">
@@ -232,9 +244,11 @@ Format as clear, actionable markdown.`,
             </p>
             <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4 bg-muted/50 border-muted">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-warning" />
+              <div className="h-5 w-5 rounded bg-background flex items-center justify-center">
+                <Clock className="h-3 w-3 text-warning" />
+              </div>
               <span className="text-xs font-medium text-muted-foreground">Time Invested</span>
             </div>
             <p className="text-2xl font-bold text-foreground">
@@ -242,9 +256,11 @@ Format as clear, actionable markdown.`,
             </p>
             <p className="text-xs text-muted-foreground">{topics.length} topics</p>
           </Card>
-          <Card className="p-4 col-span-2 md:col-span-1">
+          <Card className="p-4 bg-muted/50 border-muted">
             <div className="flex items-center gap-2 mb-1">
-              <Timer className="h-4 w-4 text-destructive" />
+              <div className="h-5 w-5 rounded bg-background flex items-center justify-center">
+                <Timer className="h-3 w-3 text-destructive" />
+              </div>
               <span className="text-xs font-medium text-muted-foreground">Time Remaining</span>
             </div>
             <p className="text-2xl font-bold text-foreground">
