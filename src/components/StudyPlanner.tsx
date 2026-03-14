@@ -124,9 +124,13 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
     catch { toast.error("Failed"); }
   };
 
+  const latestResult = examResults.length > 0 ? examResults[0] : null;
+  const hasMiniTest = examResults.length > 0;
+
   const generatePlan = async () => {
     if (!examDate) { toast.error("Please select an exam date"); return; }
     if (topics.length === 0) { toast.error("Add topics first"); return; }
+    if (!hasMiniTest) { toast.error("Take a Mini Test first to assess your level"); return; }
 
     setLoading(true);
     setPlanContent("");
@@ -137,20 +141,30 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
       .map((t) => `- ${t.name} (${t.marks_weightage} marks, confidence: ${t.confidence || "unrated"}, time spent: ${t.time_spent_minutes}m)`)
       .join("\n");
 
+    // Include mini test results for personalized planning
+    const testSummary = latestResult
+      ? `\nDiagnostic Mini Test Results:\n- Score: ${latestResult.score_percentage}% (${latestResult.correct_answers}/${latestResult.total_questions} correct)\n- Duration: ${Math.round(latestResult.duration_seconds / 60)} minutes\n- Date taken: ${new Date(latestResult.created_at).toLocaleDateString()}\n`
+      : "";
+
     const msg: Msg = {
       role: "user",
       content: `Create a study plan for ${subjectName ? `the subject "${subjectName}"` : "an exam"} on ${format(examDate, "PPP")} (${daysLeft} days away).
 The student can study ${hrs} hours per day.
 The student is aiming to score ${targetScore}% in this exam.
-
+${testSummary}
 Topics:
 ${topicSummary}
+
+Based on the student's mini test performance (${latestResult?.score_percentage ?? 0}%), tailor the plan to their current capability level.
+${(latestResult?.score_percentage ?? 0) < 40 ? "The student needs significant foundational work. Focus on basics and build confidence gradually." : ""}
+${(latestResult?.score_percentage ?? 0) >= 40 && (latestResult?.score_percentage ?? 0) < 70 ? "The student has a moderate understanding. Focus on strengthening weak areas and building depth." : ""}
+${(latestResult?.score_percentage ?? 0) >= 70 ? "The student has a strong base. Focus on mastery, edge cases, and exam strategy." : ""}
 
 Structure the output in exactly TWO sections:
 
 ## Strategic Overview
 Provide a brief strategic summary (5-8 bullet points) covering:
-- Overall approach and priority order
+- Overall approach and priority order based on the student's current level (${latestResult?.score_percentage ?? 0}%)
 - Which topics are critical vs can be deprioritized given the ${targetScore}% target
 - Key milestones and checkpoints
 - Risk areas and how to handle them
