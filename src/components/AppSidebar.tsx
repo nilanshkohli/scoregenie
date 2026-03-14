@@ -1,4 +1,4 @@
-import { BookOpen, BarChart3, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, BarChart3, Plus, Trash2, ChevronLeft, ChevronRight, Brain } from "lucide-react";
 import { Topic } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
