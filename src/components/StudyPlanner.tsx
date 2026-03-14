@@ -243,7 +243,7 @@ Format as clear, actionable markdown.`,
             <p className="text-2xl font-bold text-foreground">
               {totalMarks > 0 ? Math.round(progressPct) : 0}%
             </p>
-            <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
+            
           </Card>
 
           {/* Time Invested & Time Remaining — grouped */}
@@ -269,9 +269,6 @@ Format as clear, actionable markdown.`,
                 </p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left · ${topics.length} topics` : `${topics.length} topics`}
-            </p>
           </Card>
         </div>
       )}
