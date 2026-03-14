@@ -59,7 +59,7 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
       if (plans.length > 0 && !planContent) {
         setPlanContent(plans[0].plan_content);
         setExamDate(new Date(plans[0].exam_date));
-        setHoursPerDay(String(plans[0].hours_per_day));
+        // hours_per_day no longer set by user
       }
     }).catch(() => {});
   }, []);
