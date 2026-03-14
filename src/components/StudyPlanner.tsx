@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Sparkles, Clock } from "lucide-react";
+import { CalendarIcon, Loader2, Sparkles, Clock, BookOpen, Brain, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,11 +22,14 @@ import {
 } from "@/lib/api";
 import { toast } from "sonner";
 
+type View = "planner" | "syllabus" | "learn" | "revise" | "exam" | "progress";
+
 type Props = {
   topics: Topic[];
+  onNavigate: (view: View) => void;
 };
 
-export default function StudyPlanner({ topics }: Props) {
+export default function StudyPlanner({ topics, onNavigate }: Props) {
   const [examDate, setExamDate] = useState<Date>();
   const [hoursPerDay, setHoursPerDay] = useState("3");
   const [loading, setLoading] = useState(false);
@@ -35,7 +38,15 @@ export default function StudyPlanner({ topics }: Props) {
   const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
-    fetchStudyPlans().then(setSavedPlans).catch(() => {});
+    fetchStudyPlans().then((plans) => {
+      setSavedPlans(plans);
+      // Auto-load latest plan
+      if (plans.length > 0 && !planContent) {
+        setPlanContent(plans[0].plan_content);
+        setExamDate(new Date(plans[0].exam_date));
+        setHoursPerDay(String(plans[0].hours_per_day));
+      }
+    }).catch(() => {});
   }, []);
 
   const generatePlan = async () => {
@@ -72,6 +83,7 @@ Create a day-by-day study schedule that:
 3. Includes revision days before the exam
 4. Balances study sessions with breaks
 5. Includes specific actions for each day (study, practice, revise)
+6. Schedules mock exams at regular intervals
 
 Format as a clear, actionable markdown schedule with days, topics, and time allocations.`,
     };
@@ -91,7 +103,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
         },
       });
 
-      // Save plan
       const saved = await saveStudyPlan({
         exam_date: format(examDate, "yyyy-MM-dd"),
         hours_per_day: hours,
@@ -105,14 +116,64 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
     }
   };
 
+  const hasPlan = !!planContent;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Study Planner</h1>
+        <h1 className="text-2xl font-bold text-foreground">Study Plan</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          AI-generated study schedule based on your exam date and topics
+          Your personalized study schedule — the hub for all your preparation
         </p>
       </div>
+
+      {/* Quick actions when plan exists */}
+      {hasPlan && topics.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Card
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow border-primary/20 hover:border-primary/40"
+            onClick={() => onNavigate("learn")}
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <BookOpen className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Learn</p>
+                <p className="text-xs text-muted-foreground">Study a topic</p>
+              </div>
+            </div>
+          </Card>
+          <Card
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow border-warning/20 hover:border-warning/40"
+            onClick={() => onNavigate("revise")}
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-warning/10 flex items-center justify-center">
+                <Brain className="h-4 w-4 text-warning" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Revise</p>
+                <p className="text-xs text-muted-foreground">Flashcard review</p>
+              </div>
+            </div>
+          </Card>
+          <Card
+            className="p-4 cursor-pointer hover:shadow-md transition-shadow border-destructive/20 hover:border-destructive/40"
+            onClick={() => onNavigate("exam")}
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center">
+                <ClipboardList className="h-4 w-4 text-destructive" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Mock Exam</p>
+                <p className="text-xs text-muted-foreground">Test yourself</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Configuration */}
       <Card className="p-5 space-y-4">
@@ -159,6 +220,8 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
         <Button onClick={generatePlan} disabled={loading || !examDate} className="w-full" size="lg">
           {loading ? (
             <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Plan...</>
+          ) : hasPlan ? (
+            <><Sparkles className="h-5 w-5 mr-2" /> Regenerate Study Plan</>
           ) : (
             <><Sparkles className="h-5 w-5 mr-2" /> Generate Study Plan</>
           )}
@@ -179,17 +242,17 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
       )}
 
       {/* Saved plans */}
-      {savedPlans.length > 0 && !planContent && (
+      {savedPlans.length > 1 && (
         <div>
           <button
             onClick={() => setShowSaved(!showSaved)}
             className="text-sm font-medium text-primary hover:underline mb-3 block"
           >
-            {showSaved ? "Hide" : "Show"} previous plans ({savedPlans.length})
+            {showSaved ? "Hide" : "Show"} previous plans ({savedPlans.length - 1})
           </button>
           {showSaved && (
             <div className="space-y-3">
-              {savedPlans.map((plan) => (
+              {savedPlans.slice(1).map((plan) => (
                 <Card
                   key={plan.id}
                   className="p-4 cursor-pointer hover:shadow-sm transition-shadow"

@@ -1,9 +1,9 @@
-import { BookOpen, BarChart3, Plus, ChevronLeft, ChevronRight, Brain, ClipboardList, TrendingUp, Calendar, FileText } from "lucide-react";
+import { BookOpen, Plus, ChevronLeft, ChevronRight, Brain, ClipboardList, TrendingUp, Calendar } from "lucide-react";
 import { Topic } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type View = "dashboard" | "syllabus" | "learn" | "revise" | "exam" | "analytics" | "planner" | "notes";
+type View = "planner" | "syllabus" | "learn" | "revise" | "exam" | "progress";
 
 type Props = {
   topics: Topic[];
@@ -16,13 +16,11 @@ type Props = {
 };
 
 const navItems: { view: View; label: string; icon: typeof BookOpen }[] = [
-  { view: "dashboard", label: "Dashboard", icon: BarChart3 },
+  { view: "planner", label: "Study Plan", icon: Calendar },
   { view: "syllabus", label: "Add Topics", icon: Plus },
   { view: "revise", label: "Revise", icon: Brain },
   { view: "exam", label: "Mock Exam", icon: ClipboardList },
-  { view: "planner", label: "Study Plan", icon: Calendar },
-  { view: "analytics", label: "Analytics", icon: TrendingUp },
-  { view: "notes", label: "Notes", icon: FileText },
+  { view: "progress", label: "Progress", icon: TrendingUp },
 ];
 
 export default function AppSidebar({

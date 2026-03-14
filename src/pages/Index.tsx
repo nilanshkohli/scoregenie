@@ -2,19 +2,17 @@ import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTopics, Topic } from "@/lib/api";
 import AppSidebar from "@/components/AppSidebar";
-import Dashboard from "@/components/Dashboard";
 import SyllabusInput from "@/components/SyllabusInput";
 import LearningLab from "@/components/LearningLab";
 import ReviseMode from "@/components/ReviseMode";
 import ExamSimulator from "@/components/ExamSimulator";
-import ProgressAnalytics from "@/components/ProgressAnalytics";
+import ProgressOverview from "@/components/ProgressOverview";
 import StudyPlanner from "@/components/StudyPlanner";
-import NotesBookmarks from "@/components/NotesBookmarks";
 
-type View = "dashboard" | "syllabus" | "learn" | "revise" | "exam" | "analytics" | "planner" | "notes";
+type View = "planner" | "syllabus" | "learn" | "revise" | "exam" | "progress";
 
 const Index = () => {
-  const [view, setView] = useState<View>("dashboard");
+  const [view, setView] = useState<View>("planner");
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const queryClient = useQueryClient();
@@ -39,10 +37,6 @@ const Index = () => {
     setView("learn");
   };
 
-  const handleSelectTopicForNotes = (id: string) => {
-    setSelectedTopicId(id);
-  };
-
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar
@@ -55,8 +49,8 @@ const Index = () => {
         onToggleCollapse={() => setCollapsed(!collapsed)}
       />
       <main className="flex-1 overflow-y-auto p-6">
-        {view === "dashboard" && (
-          <Dashboard topics={topics} onStartRevision={() => setView("revise")} />
+        {view === "planner" && (
+          <StudyPlanner topics={topics} onNavigate={handleNavigate} />
         )}
         {view === "syllabus" && (
           <SyllabusInput topics={topics} onRefresh={refresh} />
@@ -81,18 +75,8 @@ const Index = () => {
         {view === "exam" && (
           <ExamSimulator topics={topics} />
         )}
-        {view === "analytics" && (
-          <ProgressAnalytics topics={topics} />
-        )}
-        {view === "planner" && (
-          <StudyPlanner topics={topics} />
-        )}
-        {view === "notes" && (
-          <NotesBookmarks
-            topics={topics}
-            selectedTopicId={selectedTopicId}
-            onSelectTopic={handleSelectTopicForNotes}
-          />
+        {view === "progress" && (
+          <ProgressOverview topics={topics} />
         )}
       </main>
     </div>
