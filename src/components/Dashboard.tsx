@@ -104,6 +104,14 @@ export default function Dashboard({ topics, onStartRevision }: Props) {
         <Progress value={progressPct} className="h-2" />
       </Card>
 
+      {/* Quick Revise Button */}
+      {topics.length > 0 && (
+        <Button onClick={onStartRevision} className="w-full" size="lg">
+          <Brain className="h-5 w-5 mr-2" />
+          Start Smart Revision
+        </Button>
+      )}
+
       {/* Confidence Distribution */}
       {topics.length > 0 && (
         <Card className="p-4">
