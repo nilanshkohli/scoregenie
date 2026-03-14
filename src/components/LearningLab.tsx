@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
   Topic,
-  ChatMessage,
   Msg,
   fetchMessages,
   saveMessage,
@@ -13,11 +12,16 @@ import {
   streamExplanation,
 } from "@/lib/api";
 import { toast } from "sonner";
-import { Send, CheckCircle, AlertCircle, XCircle, Loader2 } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw } from "lucide-react";
 
 type Props = {
   topic: Topic;
   onTopicUpdate: () => void;
+};
+
+type PracticeQuestion = {
+  question: string;
+  answer: string;
 };
 
 export default function LearningLab({ topic, onTopicUpdate }: Props) {
@@ -25,10 +29,14 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [practiceMode, setPracticeMode] = useState(false);
+  const [practiceQuestions, setPracticeQuestions] = useState<PracticeQuestion[]>([]);
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [practiceLoading, setPracticeLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<number>(Date.now());
 
-  // Load existing messages or generate initial explanation
   useEffect(() => {
     startTimeRef.current = Date.now();
     let cancelled = false;
@@ -47,7 +55,6 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
           );
           setInitialLoading(false);
         } else {
-          // Generate initial explanation
           setMessages([]);
           setInitialLoading(false);
           await generateExplanation([
@@ -61,7 +68,6 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
 
     return () => {
       cancelled = true;
-      // Save time spent
       const elapsed = Math.round((Date.now() - startTimeRef.current) / 60000);
       if (elapsed > 0) {
         updateTopic(topic.id, {
@@ -72,8 +78,10 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
   }, [topic.id]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+    if (!practiceMode) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages, practiceMode]);
 
   const generateExplanation = async (msgs: Msg[]) => {
     setLoading(true);
@@ -99,7 +107,6 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
         onDelta: upsert,
         onDone: () => setLoading(false),
       });
-      // Save messages
       for (const m of msgs) {
         await saveMessage(topic.id, m.role, m.content);
       }
@@ -119,15 +126,98 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
     await generateExplanation(newMsgs);
   };
 
-  const handlePractice = () => {
-    if (loading) return;
+  const handlePractice = async () => {
+    if (loading || practiceLoading) return;
+    setPracticeLoading(true);
+    setPracticeMode(true);
+    setPracticeQuestions([]);
+    setCurrentQIndex(0);
+    setShowAnswer(false);
+
+    let fullResponse = "";
+
     const userMsg: Msg = {
       role: "user",
-      content: `Generate 3-5 practice questions for "${topic.name}" with varying difficulty. Include the answers after all questions.`,
+      content: `Generate exactly 5 practice questions for "${topic.name}" with varying difficulty.
+
+IMPORTANT: Return ONLY in this exact format, no other text:
+
+Q1: [question text]
+A1: [answer text]
+
+Q2: [question text]
+A2: [answer text]
+
+Q3: [question text]
+A3: [answer text]
+
+Q4: [question text]
+A4: [answer text]
+
+Q5: [question text]
+A5: [answer text]`,
     };
-    const newMsgs = [...messages, userMsg];
-    setMessages(newMsgs);
-    generateExplanation(newMsgs);
+
+    try {
+      await streamExplanation({
+        messages: [...messages, userMsg],
+        topicName: topic.name,
+        onDelta: (chunk) => {
+          fullResponse += chunk;
+        },
+        onDone: () => {
+          // Parse questions
+          const parsed = parseQuestions(fullResponse);
+          setPracticeQuestions(parsed);
+          setPracticeLoading(false);
+        },
+      });
+      await saveMessage(topic.id, "user", userMsg.content);
+      await saveMessage(topic.id, "assistant", fullResponse);
+    } catch (e: any) {
+      setPracticeLoading(false);
+      setPracticeMode(false);
+      toast.error(e.message || "Failed to generate questions");
+    }
+  };
+
+  const parseQuestions = (text: string): PracticeQuestion[] => {
+    const questions: PracticeQuestion[] = [];
+    const qRegex = /Q(\d+):\s*([\s\S]*?)(?=A\1:)/g;
+    const aRegex = /A(\d+):\s*([\s\S]*?)(?=Q\d+:|$)/g;
+
+    const qMatches = [...text.matchAll(/Q\d+:\s*([\s\S]*?)(?=\nA\d+:)/g)];
+    const aMatches = [...text.matchAll(/A\d+:\s*([\s\S]*?)(?=\n\nQ\d+:|$)/g)];
+
+    for (let i = 0; i < Math.min(qMatches.length, aMatches.length); i++) {
+      questions.push({
+        question: qMatches[i][1].trim(),
+        answer: aMatches[i][1].trim(),
+      });
+    }
+
+    // Fallback: simple split
+    if (questions.length === 0) {
+      const lines = text.split("\n").filter(Boolean);
+      let currentQ = "";
+      let currentA = "";
+      for (const line of lines) {
+        if (/^Q\d+:/i.test(line)) {
+          if (currentQ && currentA) {
+            questions.push({ question: currentQ, answer: currentA });
+          }
+          currentQ = line.replace(/^Q\d+:\s*/i, "").trim();
+          currentA = "";
+        } else if (/^A\d+:/i.test(line)) {
+          currentA = line.replace(/^A\d+:\s*/i, "").trim();
+        }
+      }
+      if (currentQ && currentA) {
+        questions.push({ question: currentQ, answer: currentA });
+      }
+    }
+
+    return questions.length > 0 ? questions : [{ question: text, answer: "See explanation above." }];
   };
 
   const handleConfidence = async (level: "confident" | "somewhat" | "not_confident") => {
@@ -151,10 +241,108 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
     );
   }
 
+  // Practice mode UI
+  if (practiceMode) {
+    const currentQ = practiceQuestions[currentQIndex];
+
+    return (
+      <div className="flex flex-col h-full max-w-2xl mx-auto">
+        <div className="flex items-center justify-between py-3 px-1">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Practice: {topic.name}</h2>
+            <p className="text-xs text-muted-foreground">
+              Question {currentQIndex + 1} of {practiceQuestions.length || "..."}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setPracticeMode(false); setShowAnswer(false); }}
+          >
+            <RotateCcw className="h-3.5 w-3.5 mr-1" /> Back to Learning
+          </Button>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center px-1">
+          {practiceLoading ? (
+            <div className="text-center space-y-3">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+              <p className="text-sm text-muted-foreground">Generating questions...</p>
+            </div>
+          ) : currentQ ? (
+            <div className="w-full space-y-4">
+              {/* Progress dots */}
+              <div className="flex justify-center gap-1.5">
+                {practiceQuestions.map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-2 w-2 rounded-full transition-colors ${
+                      i === currentQIndex ? "bg-primary" : i < currentQIndex ? "bg-success" : "bg-border"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Question card */}
+              <Card className="p-6">
+                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">
+                  Question {currentQIndex + 1}
+                </p>
+                <div className="text-foreground leading-relaxed">
+                  <ReactMarkdown>{currentQ.question}</ReactMarkdown>
+                </div>
+              </Card>
+
+              {/* Answer card */}
+              {showAnswer ? (
+                <Card className="p-6 border-success/30 bg-success/5">
+                  <p className="text-xs font-semibold text-success uppercase tracking-wider mb-3">
+                    Answer
+                  </p>
+                  <div className="text-foreground leading-relaxed">
+                    <ReactMarkdown>{currentQ.answer}</ReactMarkdown>
+                  </div>
+                </Card>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowAnswer(true)}
+                >
+                  Reveal Answer
+                </Button>
+              )}
+
+              {/* Navigation */}
+              {showAnswer && (
+                <div className="flex justify-end">
+                  {currentQIndex < practiceQuestions.length - 1 ? (
+                    <Button
+                      onClick={() => {
+                        setCurrentQIndex((i) => i + 1);
+                        setShowAnswer(false);
+                      }}
+                    >
+                      Next Question <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  ) : (
+                    <Button onClick={() => { setPracticeMode(false); setShowAnswer(false); }}>
+                      Done — Back to Learning
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between py-3 px-1">
+      <div className="flex items-center justify-between py-3 px-1 shrink-0">
         <div>
           <h2 className="text-lg font-bold text-foreground">{topic.name}</h2>
           <p className="text-xs text-muted-foreground">
@@ -167,40 +355,36 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
       </div>
 
       {/* Chat area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4 pb-4 px-1">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-4 pb-4 px-1 min-h-0">
         {messages.map((m, i) => (
           <div
             key={i}
             className={m.role === "user" ? "flex justify-end" : "flex justify-start"}
           >
-            <Card
-              className={
-                m.role === "user"
-                  ? "max-w-[80%] p-3 bg-primary text-primary-foreground border-0"
-                  : "max-w-[90%] p-4 bg-card"
-              }
-            >
-              {m.role === "assistant" ? (
-                <div className="prose prose-sm max-w-none text-card-foreground prose-headings:text-card-foreground prose-strong:text-card-foreground prose-code:text-card-foreground">
+            {m.role === "user" ? (
+              <div className="max-w-[80%] rounded-lg p-3 bg-primary text-primary-foreground">
+                <p className="text-sm">{m.content}</p>
+              </div>
+            ) : (
+              <Card className="max-w-[90%] p-4">
+                <div className="prose prose-sm prose-neutral max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                   <ReactMarkdown>{m.content}</ReactMarkdown>
                 </div>
-              ) : (
-                <p className="text-sm">{m.content}</p>
-              )}
-            </Card>
+              </Card>
+            )}
           </div>
         ))}
         {loading && messages[messages.length - 1]?.role !== "assistant" && (
           <div className="flex justify-start">
-            <Card className="p-3 bg-card">
+            <Card className="p-3">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </Card>
           </div>
         )}
       </div>
 
-      {/* Confidence Tracker */}
-      <div className="border-t border-border pt-3 pb-2 px-1">
+      {/* Confidence Tracker + Input */}
+      <div className="border-t border-border pt-3 pb-2 px-1 shrink-0">
         <p className="text-xs font-medium text-muted-foreground mb-2">
           How confident are you with this topic?
         </p>
@@ -231,7 +415,6 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
           </Button>
         </div>
 
-        {/* Input */}
         <div className="flex gap-2">
           <Input
             placeholder="Ask a follow-up question..."
