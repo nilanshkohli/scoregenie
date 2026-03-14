@@ -8,7 +8,7 @@ type Props = {
   onStartRevision: () => void;
 };
 
-export default function Dashboard({ topics }: Props) {
+export default function Dashboard({ topics, onStartRevision }: Props) {
   const totalMarks = topics.reduce((s, t) => s + t.marks_weightage, 0);
   const coveredMarks = topics
     .filter((t) => t.is_completed)
