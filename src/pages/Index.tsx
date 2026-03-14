@@ -84,9 +84,6 @@ const Index = () => {
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar
-        topics={topics}
-        selectedTopicId={selectedTopicId}
-        onSelectTopic={(id) => { setSelectedTopicId(id); setView("learn"); }}
         onNavigate={handleNavigate}
         currentView={view}
         collapsed={collapsed}
@@ -107,9 +104,11 @@ const Index = () => {
           <LearningLab
             key={selectedTopic.id}
             topic={selectedTopic}
+            topics={topics}
             onTopicUpdate={refresh}
             onNextTopic={handleNextTopic}
             hasNextTopic={topics.length > 1}
+            onSelectTopic={(id) => setSelectedTopicId(id)}
           />
         )}
         {view === "learn" && !selectedTopic && topics.length === 0 && (

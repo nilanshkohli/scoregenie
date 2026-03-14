@@ -13,12 +13,15 @@ import {
 } from "@/lib/api";
 import { toast } from "sonner";
 import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   topic: Topic;
+  topics: Topic[];
   onTopicUpdate: () => void;
   onNextTopic?: () => void;
   hasNextTopic?: boolean;
+  onSelectTopic: (id: string) => void;
 };
 
 type PracticeQuestion = {
@@ -28,7 +31,7 @@ type PracticeQuestion = {
   options?: string[]; // For objective questions
 };
 
-export default function LearningLab({ topic, onTopicUpdate, onNextTopic, hasNextTopic }: Props) {
+export default function LearningLab({ topic, topics, onTopicUpdate, onNextTopic, hasNextTopic, onSelectTopic }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -574,8 +577,36 @@ CORRECT: [A/B/C/D]`,
     );
   }
 
+  const confidenceColor = (c: string | null) => {
+    if (c === "confident") return "bg-success";
+    if (c === "somewhat") return "bg-warning";
+    if (c === "not_confident") return "bg-destructive";
+    return "bg-muted";
+  };
+
   return (
     <div className="flex flex-col h-full max-w-3xl mx-auto">
+      {/* Topic selector strip */}
+      {topics.length > 1 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 px-1 shrink-0 scrollbar-none">
+          {topics.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => onSelectTopic(t.id)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors border",
+                t.id === topic.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
+              )}
+            >
+              <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", confidenceColor(t.confidence))} />
+              {t.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between py-3 px-1 shrink-0">
         <div>
