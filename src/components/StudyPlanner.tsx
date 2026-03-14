@@ -49,6 +49,7 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);
   const [showSaved, setShowSaved] = useState(false);
+  const [examResults, setExamResults] = useState<ExamResult[]>([]);
 
   // Add topics state
   const [topicName, setTopicName] = useState("");
@@ -63,9 +64,9 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
       if (plans.length > 0 && !planContent) {
         setPlanContent(plans[0].plan_content);
         setExamDate(new Date(plans[0].exam_date));
-        // hours_per_day no longer set by user
       }
     }).catch(() => {});
+    fetchExamResults().then(setExamResults).catch(() => {});
   }, []);
 
   // Progress calculations
