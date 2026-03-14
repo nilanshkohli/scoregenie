@@ -12,11 +12,13 @@ import {
   streamExplanation,
 } from "@/lib/api";
 import { toast } from "sonner";
-import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X, ArrowRight } from "lucide-react";
 
 type Props = {
   topic: Topic;
   onTopicUpdate: () => void;
+  onNextTopic?: () => void;
+  hasNextTopic?: boolean;
 };
 
 type PracticeQuestion = {
@@ -26,7 +28,7 @@ type PracticeQuestion = {
   options?: string[]; // For objective questions
 };
 
-export default function LearningLab({ topic, onTopicUpdate }: Props) {
+export default function LearningLab({ topic, onTopicUpdate, onNextTopic, hasNextTopic }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -582,9 +584,16 @@ CORRECT: [A/B/C/D]`,
             {topic.marks_weightage} score potential
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handlePractice} disabled={loading}>
-          Practice Questions
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handlePractice} disabled={loading}>
+            Practice Questions
+          </Button>
+          {hasNextTopic && onNextTopic && (
+            <Button variant="default" size="sm" onClick={onNextTopic}>
+              Next Topic <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Chat area */}
