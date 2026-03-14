@@ -19,7 +19,10 @@ export default function SyllabusInput({ topics, onRefresh }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handleAdd = async () => {
-    if (!name.trim() || !marks.trim()) return;
+    if (!name.trim()) {
+      toast.error("Please enter a topic name");
+      return;
+    }
     setLoading(true);
     try {
       await addTopic(name.trim(), parseInt(marks) || 0, topics.length);
