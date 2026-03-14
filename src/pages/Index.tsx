@@ -33,6 +33,7 @@ const Index = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [subjectName, setSubjectName] = useState("");
+  const [targetScore, setTargetScore] = useState("80");
   const queryClient = useQueryClient();
 
   const { data: topics = [] } = useQuery({
