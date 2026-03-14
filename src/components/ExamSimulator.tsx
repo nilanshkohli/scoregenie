@@ -395,7 +395,7 @@ ANSWER: [answer]`,
     <div className="flex flex-col h-full max-w-2xl mx-auto">
       <div className="flex items-center justify-between py-3 px-1 shrink-0">
         <div>
-          <h2 className="text-lg font-bold text-foreground">Mock Exam</h2>
+          <h2 className="text-lg font-bold text-foreground">Test Mode</h2>
           <p className="text-xs text-muted-foreground">
             Q{currentIdx + 1}/{questions.length} · {currentQ?.topicName}
           </p>
