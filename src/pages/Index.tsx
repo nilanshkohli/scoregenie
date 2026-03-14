@@ -13,6 +13,7 @@ const Index = () => {
   const [view, setView] = useState<View>("planner");
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [subjectName, setSubjectName] = useState("");
   const queryClient = useQueryClient();
 
   const { data: topics = [] } = useQuery({
@@ -26,50 +27,40 @@ const Index = () => {
 
   const selectedTopic = topics.find((t) => t.id === selectedTopicId) ?? null;
 
-  const handleNavigate = (v: View) => {
-    setView(v);
-  };
-
-  const handleSelectTopic = (id: string) => {
-    setSelectedTopicId(id);
-    setView("learn");
-  };
-
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar
         topics={topics}
         selectedTopicId={selectedTopicId}
-        onSelectTopic={handleSelectTopic}
-        onNavigate={handleNavigate}
+        onSelectTopic={(id) => { setSelectedTopicId(id); setView("learn"); }}
+        onNavigate={setView}
         currentView={view}
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed(!collapsed)}
+        subjectName={subjectName}
       />
       <main className="flex-1 overflow-y-auto p-6">
         {view === "planner" && (
-          <StudyPlanner topics={topics} onNavigate={handleNavigate} onRefresh={refresh} />
+          <StudyPlanner
+            topics={topics}
+            onNavigate={setView}
+            onRefresh={refresh}
+            subjectName={subjectName}
+            onSubjectNameChange={setSubjectName}
+          />
         )}
         {view === "learn" && selectedTopic && (
-          <LearningLab
-            key={selectedTopic.id}
-            topic={selectedTopic}
-            onTopicUpdate={refresh}
-          />
+          <LearningLab key={selectedTopic.id} topic={selectedTopic} onTopicUpdate={refresh} />
         )}
         {view === "learn" && !selectedTopic && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">
-              Select a topic from the sidebar to start learning
-            </p>
+            <p className="text-muted-foreground">Select a topic from the sidebar to start learning</p>
           </div>
         )}
         {view === "revise" && (
-          <ReviseMode topics={topics} onSelectTopic={handleSelectTopic} />
+          <ReviseMode topics={topics} onSelectTopic={(id) => { setSelectedTopicId(id); setView("learn"); }} />
         )}
-        {view === "exam" && (
-          <ExamSimulator topics={topics} />
-        )}
+        {view === "exam" && <ExamSimulator topics={topics} />}
       </main>
     </div>
   );
