@@ -84,9 +84,6 @@ const Index = () => {
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar
-        topics={topics}
-        selectedTopicId={selectedTopicId}
-        onSelectTopic={(id) => { setSelectedTopicId(id); setView("learn"); }}
         onNavigate={handleNavigate}
         currentView={view}
         collapsed={collapsed}
