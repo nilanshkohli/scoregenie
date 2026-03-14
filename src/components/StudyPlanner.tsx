@@ -162,7 +162,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
         onDelta: (chunk) => { fullResponse += chunk; setPlanContent(fullResponse); },
         onDone: () => { setLoading(false); },
       });
-      const saved = await saveStudyPlan({ exam_date: format(examDate, "yyyy-MM-dd"), hours_per_day: hrs, plan_content: fullResponse });
+      const saved = await saveStudyPlan({ exam_date: format(examDate, "yyyy-MM-dd"), hours_per_day: hrs ?? 3, plan_content: fullResponse });
       setSavedPlans((prev) => [saved, ...prev]);
       toast.success("Study plan saved!");
     } catch (e: any) {
