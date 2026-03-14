@@ -25,6 +25,7 @@ import {
 type Props = {
   topics: Topic[];
   onSelectTopic: (id: string) => void;
+  onRevisionComplete?: () => void;
 };
 
 type Flashcard = {
