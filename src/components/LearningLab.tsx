@@ -579,7 +579,7 @@ CORRECT: [A/B/C/D]`,
         <div>
           <h2 className="text-lg font-bold text-foreground">{topic.name}</h2>
           <p className="text-xs text-muted-foreground">
-            {topic.marks_weightage} marks weightage
+            {topic.marks_weightage} score potential
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={handlePractice} disabled={loading}>
