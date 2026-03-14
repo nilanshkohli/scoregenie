@@ -104,9 +104,11 @@ const Index = () => {
           <LearningLab
             key={selectedTopic.id}
             topic={selectedTopic}
+            topics={topics}
             onTopicUpdate={refresh}
             onNextTopic={handleNextTopic}
             hasNextTopic={topics.length > 1}
+            onSelectTopic={(id) => setSelectedTopicId(id)}
           />
         )}
         {view === "learn" && !selectedTopic && topics.length === 0 && (
