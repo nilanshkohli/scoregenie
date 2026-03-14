@@ -36,6 +36,8 @@ type Props = {
   onRefresh: () => void;
   subjectName: string;
   onSubjectNameChange: (name: string) => void;
+  targetScore: string;
+  onTargetScoreChange: (score: string) => void;
 };
 
 export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange }: Props) {
