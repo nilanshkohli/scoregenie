@@ -379,7 +379,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             <Input
               placeholder="e.g. Mathematics, Physics, History"
               value={subjectName}
-              onChange={(e) => setSubjectName(e.target.value)}
+              onChange={(e) => onSubjectNameChange(e.target.value)}
             />
           </div>
           <div>
