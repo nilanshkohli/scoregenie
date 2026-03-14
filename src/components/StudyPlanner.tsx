@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { format, differenceInDays } from "date-fns";
 import {
   CalendarIcon, Loader2, Sparkles, Clock,
-  Target, Plus, Trash2, Timer,
+  Target, Plus, Trash2, Timer, CheckCircle, Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
