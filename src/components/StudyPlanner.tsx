@@ -201,7 +201,7 @@ Format as clear, actionable markdown.`,
             Current Study Plan
           </h3>
           <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0 border border-border rounded-lg p-4 max-h-[28rem] overflow-y-auto overflow-x-auto">
-            <ReactMarkdown>{planContent}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{planContent}</ReactMarkdown>
           </div>
         </Card>
       )}
