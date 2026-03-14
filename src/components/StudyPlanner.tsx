@@ -420,7 +420,48 @@ Format as clear, actionable markdown.`,
           />
         </div>
 
-        <Button onClick={generatePlan} disabled={loading || !examDate || topics.length === 0} className="w-full" size="lg">
+        {/* Step 5: Mini Test Gate */}
+        {topics.length > 0 && (
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
+              5. Diagnostic Mini Test
+            </label>
+            {hasMiniTest ? (
+              <Card className="p-4 bg-green-500/10 border-green-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-semibold text-foreground">Mini Test Completed</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Score: <span className="font-bold text-foreground">{latestResult?.score_percentage}%</span>
+                  {" · "}
+                  {latestResult?.correct_answers}/{latestResult?.total_questions} correct
+                  {" · "}
+                  {latestResult && Math.round(latestResult.duration_seconds / 60)}min
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your study plan will be customized based on this performance.
+                </p>
+              </Card>
+            ) : (
+              <Card className="p-4 bg-amber-500/10 border-amber-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Timer className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-semibold text-foreground">Take a Mini Test First</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  A quick diagnostic test will assess your current level so we can create a study plan tailored to your capability.
+                </p>
+                <Button onClick={() => onNavigate("exam")} variant="outline" size="sm" className="gap-2">
+                  <Play className="h-3.5 w-3.5" />
+                  Take Mini Test
+                </Button>
+              </Card>
+            )}
+          </div>
+        )}
+
+        <Button onClick={generatePlan} disabled={loading || !examDate || topics.length === 0 || !hasMiniTest} className="w-full" size="lg">
           {loading ? (
             <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Plan...</>
           ) : hasPlan ? (
@@ -429,6 +470,11 @@ Format as clear, actionable markdown.`,
             <><Sparkles className="h-5 w-5 mr-2" /> Generate Study Plan</>
           )}
         </Button>
+        {!hasMiniTest && topics.length > 0 && (
+          <p className="text-xs text-center text-muted-foreground">
+            Complete a Mini Test to unlock study plan generation
+          </p>
+        )}
       </Card>
 
       {/* Saved plans */}
