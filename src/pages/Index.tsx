@@ -5,8 +5,9 @@ import AppSidebar from "@/components/AppSidebar";
 import Dashboard from "@/components/Dashboard";
 import SyllabusInput from "@/components/SyllabusInput";
 import LearningLab from "@/components/LearningLab";
+import ReviseMode from "@/components/ReviseMode";
 
-type View = "dashboard" | "syllabus" | "learn";
+type View = "dashboard" | "syllabus" | "learn" | "revise";
 
 const Index = () => {
   const [view, setView] = useState<View>("dashboard");
@@ -46,7 +47,9 @@ const Index = () => {
         onToggleCollapse={() => setCollapsed(!collapsed)}
       />
       <main className="flex-1 overflow-y-auto p-6">
-        {view === "dashboard" && <Dashboard topics={topics} />}
+        {view === "dashboard" && (
+          <Dashboard topics={topics} onStartRevision={() => setView("revise")} />
+        )}
         {view === "syllabus" && (
           <SyllabusInput topics={topics} onRefresh={refresh} />
         )}
@@ -63,6 +66,9 @@ const Index = () => {
               Select a topic from the sidebar to start learning
             </p>
           </div>
+        )}
+        {view === "revise" && (
+          <ReviseMode topics={topics} onSelectTopic={handleSelectTopic} />
         )}
       </main>
     </div>
