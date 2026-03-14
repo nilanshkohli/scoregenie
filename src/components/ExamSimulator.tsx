@@ -21,6 +21,7 @@ import {
 
 type Props = {
   topics: Topic[];
+  targetScore: number;
 };
 
 type ExamQuestion = {
