@@ -25,6 +25,7 @@ import {
 type Props = {
   topics: Topic[];
   onSelectTopic: (id: string) => void;
+  onRevisionComplete?: () => void;
 };
 
 type Flashcard = {
@@ -34,7 +35,7 @@ type Flashcard = {
 
 type RevisionState = "queue" | "session";
 
-export default function ReviseMode({ topics, onSelectTopic }: Props) {
+export default function ReviseMode({ topics, onSelectTopic, onRevisionComplete }: Props) {
   const [state, setState] = useState<RevisionState>("queue");
   const [sessionTopics, setSessionTopics] = useState<Topic[]>([]);
   const [currentTopicIdx, setCurrentTopicIdx] = useState(0);
@@ -188,6 +189,10 @@ BACK6: [answer/explanation]`,
       // Session complete
       setState("queue");
       toast.success(`Revision complete! Reviewed ${cardsReviewed + 1} cards across ${topicsCompleted + 1} topics.`);
+      if (onRevisionComplete) {
+        toast.success("Moving to Test Mode...");
+        setTimeout(() => onRevisionComplete(), 1500);
+      }
     }
   };
 

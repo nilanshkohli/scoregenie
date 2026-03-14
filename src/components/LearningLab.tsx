@@ -22,6 +22,7 @@ type Props = {
   onNextTopic?: () => void;
   hasNextTopic?: boolean;
   onSelectTopic: (id: string) => void;
+  onAllCompleted?: () => void;
 };
 
 type PracticeQuestion = {
@@ -31,7 +32,7 @@ type PracticeQuestion = {
   options?: string[]; // For objective questions
 };
 
-export default function LearningLab({ topic, topics, onTopicUpdate, onNextTopic, hasNextTopic, onSelectTopic }: Props) {
+export default function LearningLab({ topic, topics, onTopicUpdate, onNextTopic, hasNextTopic, onSelectTopic, onAllCompleted }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -336,6 +337,15 @@ CORRECT: [A/B/C/D]`,
       });
       onTopicUpdate();
       toast.success("Confidence saved!");
+
+      // Check if all topics are now completed
+      if ((level === "confident" || level === "somewhat") && onAllCompleted) {
+        const otherAllCompleted = topics.filter(t => t.id !== topic.id).every(t => t.is_completed);
+        if (otherAllCompleted) {
+          toast.success("All topics completed! Moving to revision...");
+          setTimeout(() => onAllCompleted(), 1500);
+        }
+      }
     } catch {
       toast.error("Failed to save confidence");
     }
