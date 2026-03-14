@@ -34,6 +34,7 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [practiceLoading, setPracticeLoading] = useState(false);
+  const [userAnswer, setUserAnswer] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<number>(Date.now());
 
@@ -293,24 +294,47 @@ A5: [answer text]`,
                 </div>
               </Card>
 
-              {/* Answer card */}
-              {showAnswer ? (
-                <Card className="p-6 border-success/30 bg-success/5">
-                  <p className="text-xs font-semibold text-success uppercase tracking-wider mb-3">
-                    Answer
-                  </p>
-                  <div className="text-foreground leading-relaxed">
-                    <ReactMarkdown>{currentQ.answer}</ReactMarkdown>
+              {/* Your answer + Correct answer */}
+              {!showAnswer && (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-1.5">Your Answer</p>
+                    <textarea
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] resize-none"
+                      placeholder="Type your answer here..."
+                      value={userAnswer}
+                      onChange={(e) => setUserAnswer(e.target.value)}
+                    />
                   </div>
-                </Card>
-              ) : (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setShowAnswer(true)}
-                >
-                  Reveal Answer
-                </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowAnswer(true)}
+                  >
+                    Reveal Correct Answer
+                  </Button>
+                </div>
+              )}
+
+              {showAnswer && (
+                <>
+                  {userAnswer.trim() && (
+                    <Card className="p-4 border-primary/20 bg-primary/5">
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
+                        Your Answer
+                      </p>
+                      <p className="text-sm text-foreground">{userAnswer}</p>
+                    </Card>
+                  )}
+                  <Card className="p-6 border-success/30 bg-success/5">
+                    <p className="text-xs font-semibold text-success uppercase tracking-wider mb-3">
+                      Correct Answer
+                    </p>
+                    <div className="text-foreground leading-relaxed">
+                      <ReactMarkdown>{currentQ.answer}</ReactMarkdown>
+                    </div>
+                  </Card>
+                </>
               )}
 
               {/* Navigation */}
@@ -321,6 +345,7 @@ A5: [answer text]`,
                       onClick={() => {
                         setCurrentQIndex((i) => i + 1);
                         setShowAnswer(false);
+                        setUserAnswer("");
                       }}
                     >
                       Next Question <ChevronRight className="h-4 w-4 ml-1" />
