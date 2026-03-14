@@ -12,7 +12,7 @@ import {
   streamExplanation,
 } from "@/lib/api";
 import { toast } from "sonner";
-import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X } from "lucide-react";
 
 type Props = {
   topic: Topic;
@@ -20,8 +20,10 @@ type Props = {
 };
 
 type PracticeQuestion = {
+  type: "objective" | "subjective";
   question: string;
   answer: string;
+  options?: string[]; // For objective questions
 };
 
 export default function LearningLab({ topic, onTopicUpdate }: Props) {
@@ -35,6 +37,8 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
   const [showAnswer, setShowAnswer] = useState(false);
   const [practiceLoading, setPracticeLoading] = useState(false);
   const [userAnswer, setUserAnswer] = useState("");
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isAnswerLocked, setIsAnswerLocked] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<number>(Date.now());
 
@@ -134,29 +138,49 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
     setPracticeQuestions([]);
     setCurrentQIndex(0);
     setShowAnswer(false);
+    setUserAnswer("");
+    setSelectedOption(null);
+    setIsAnswerLocked(false);
 
     let fullResponse = "";
 
     const userMsg: Msg = {
       role: "user",
-      content: `Generate exactly 5 practice questions for "${topic.name}" with varying difficulty.
+      content: `Generate exactly 5 practice questions for "${topic.name}" with varying difficulty. Include a mix of objective (multiple choice) and subjective (descriptive) questions.
 
 IMPORTANT: Return ONLY in this exact format, no other text:
 
-Q1: [question text]
-A1: [answer text]
+Q1: [OBJECTIVE]
+[question text]
+A) [option 1]
+B) [option 2]
+C) [option 3]
+D) [option 4]
+CORRECT: [A/B/C/D]
 
-Q2: [question text]
-A2: [answer text]
+Q2: [SUBJECTIVE]
+[question text]
+ANSWER: [detailed answer text]
 
-Q3: [question text]
-A3: [answer text]
+Q3: [OBJECTIVE]
+[question text]
+A) [option 1]
+B) [option 2]
+C) [option 3]
+D) [option 4]
+CORRECT: [A/B/C/D]
 
-Q4: [question text]
-A4: [answer text]
+Q4: [SUBJECTIVE]
+[question text]
+ANSWER: [detailed answer text]
 
-Q5: [question text]
-A5: [answer text]`,
+Q5: [OBJECTIVE]
+[question text]
+A) [option 1]
+B) [option 2]
+C) [option 3]
+D) [option 4]
+CORRECT: [A/B/C/D]`,
     };
 
     try {
@@ -167,7 +191,6 @@ A5: [answer text]`,
           fullResponse += chunk;
         },
         onDone: () => {
-          // Parse questions
           const parsed = parseQuestions(fullResponse);
           setPracticeQuestions(parsed);
           setPracticeLoading(false);
@@ -184,41 +207,120 @@ A5: [answer text]`,
 
   const parseQuestions = (text: string): PracticeQuestion[] => {
     const questions: PracticeQuestion[] = [];
-    const qRegex = /Q(\d+):\s*([\s\S]*?)(?=A\1:)/g;
-    const aRegex = /A(\d+):\s*([\s\S]*?)(?=Q\d+:|$)/g;
+    // Split by Q followed by number
+    const qBlocks = text.split(/(?=Q\d+:)/g).filter((b) => /^Q\d+:/.test(b.trim()));
 
-    const qMatches = [...text.matchAll(/Q\d+:\s*([\s\S]*?)(?=\nA\d+:)/g)];
-    const aMatches = [...text.matchAll(/A\d+:\s*([\s\S]*?)(?=\n\nQ\d+:|$)/g)];
+    for (const block of qBlocks) {
+      const isObjective = /\[OBJECTIVE\]/i.test(block);
+      const isSubjective = /\[SUBJECTIVE\]/i.test(block);
 
-    for (let i = 0; i < Math.min(qMatches.length, aMatches.length); i++) {
-      questions.push({
-        question: qMatches[i][1].trim(),
-        answer: aMatches[i][1].trim(),
-      });
-    }
+      if (isObjective) {
+        // Parse objective question
+        const questionMatch = block.match(/Q\d+:\s*\[OBJECTIVE\]\s*\n([\s\S]*?)(?=\nA\))/);
+        const optionAMatch = block.match(/A\)\s*(.*)/);
+        const optionBMatch = block.match(/B\)\s*(.*)/);
+        const optionCMatch = block.match(/C\)\s*(.*)/);
+        const optionDMatch = block.match(/D\)\s*(.*)/);
+        const correctMatch = block.match(/CORRECT:\s*([A-D])/i);
 
-    // Fallback: simple split
-    if (questions.length === 0) {
-      const lines = text.split("\n").filter(Boolean);
-      let currentQ = "";
-      let currentA = "";
-      for (const line of lines) {
-        if (/^Q\d+:/i.test(line)) {
-          if (currentQ && currentA) {
-            questions.push({ question: currentQ, answer: currentA });
+        if (questionMatch && optionAMatch && optionBMatch && optionCMatch && optionDMatch && correctMatch) {
+          const correctLetter = correctMatch[1].toUpperCase();
+          const options = [
+            optionAMatch[1].trim(),
+            optionBMatch[1].trim(),
+            optionCMatch[1].trim(),
+            optionDMatch[1].trim(),
+          ];
+          const correctIndex = "ABCD".indexOf(correctLetter);
+          questions.push({
+            type: "objective",
+            question: questionMatch[1].trim(),
+            answer: options[correctIndex] || options[0],
+            options,
+          });
+        }
+      } else if (isSubjective) {
+        const questionMatch = block.match(/Q\d+:\s*\[SUBJECTIVE\]\s*\n([\s\S]*?)(?=\nANSWER:)/);
+        const answerMatch = block.match(/ANSWER:\s*([\s\S]*?)$/);
+
+        if (questionMatch && answerMatch) {
+          questions.push({
+            type: "subjective",
+            question: questionMatch[1].trim(),
+            answer: answerMatch[1].trim(),
+          });
+        }
+      } else {
+        // Fallback: try to detect options
+        const hasOptions = /\nA\)/.test(block);
+        if (hasOptions) {
+          const questionMatch = block.match(/Q\d+:\s*([\s\S]*?)(?=\nA\))/);
+          const optionAMatch = block.match(/A\)\s*(.*)/);
+          const optionBMatch = block.match(/B\)\s*(.*)/);
+          const optionCMatch = block.match(/C\)\s*(.*)/);
+          const optionDMatch = block.match(/D\)\s*(.*)/);
+          const correctMatch = block.match(/CORRECT:\s*([A-D])/i);
+
+          if (questionMatch && optionAMatch && optionBMatch && optionCMatch && optionDMatch) {
+            const options = [
+              optionAMatch[1].trim(),
+              optionBMatch[1].trim(),
+              optionCMatch[1].trim(),
+              optionDMatch[1].trim(),
+            ];
+            const correctLetter = correctMatch?.[1]?.toUpperCase() || "A";
+            const correctIndex = "ABCD".indexOf(correctLetter);
+            questions.push({
+              type: "objective",
+              question: questionMatch[1].trim(),
+              answer: options[correctIndex] || options[0],
+              options,
+            });
           }
-          currentQ = line.replace(/^Q\d+:\s*/i, "").trim();
-          currentA = "";
-        } else if (/^A\d+:/i.test(line)) {
-          currentA = line.replace(/^A\d+:\s*/i, "").trim();
+        } else {
+          // Treat as subjective
+          const questionMatch = block.match(/Q\d+:\s*([\s\S]*?)(?=\nANSWER:|A\d+:)/);
+          const answerMatch = block.match(/(?:ANSWER:|A\d+:)\s*([\s\S]*?)$/);
+          if (questionMatch && answerMatch) {
+            questions.push({
+              type: "subjective",
+              question: questionMatch[1].trim(),
+              answer: answerMatch[1].trim(),
+            });
+          }
         }
       }
-      if (currentQ && currentA) {
-        questions.push({ question: currentQ, answer: currentA });
-      }
     }
 
-    return questions.length > 0 ? questions : [{ question: text, answer: "See explanation above." }];
+    if (questions.length === 0) {
+      return [{ type: "subjective", question: text, answer: "See explanation above." }];
+    }
+
+    return questions;
+  };
+
+  const handleSelectOption = (optionIndex: number) => {
+    if (isAnswerLocked) return;
+    setSelectedOption(optionIndex);
+    setIsAnswerLocked(true);
+  };
+
+  const handleSubjectiveSubmit = () => {
+    if (!userAnswer.trim() || isAnswerLocked) return;
+    setIsAnswerLocked(true);
+  };
+
+  const getCorrectOptionIndex = (q: PracticeQuestion): number => {
+    if (!q.options) return -1;
+    return q.options.findIndex((opt) => opt === q.answer);
+  };
+
+  const goToNextQuestion = () => {
+    setCurrentQIndex((i) => i + 1);
+    setShowAnswer(false);
+    setUserAnswer("");
+    setSelectedOption(null);
+    setIsAnswerLocked(false);
   };
 
   const handleConfidence = async (level: "confident" | "somewhat" | "not_confident") => {
@@ -258,20 +360,22 @@ A5: [answer text]`,
           <Button
             variant="outline"
             size="sm"
-            onClick={() => { setPracticeMode(false); setShowAnswer(false); }}
+            onClick={() => { setPracticeMode(false); setShowAnswer(false); setIsAnswerLocked(false); }}
           >
             <RotateCcw className="h-3.5 w-3.5 mr-1" /> Back to Learning
           </Button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-1">
+        <div className="flex-1 overflow-y-auto px-1 pb-4">
           {practiceLoading ? (
-            <div className="text-center space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-              <p className="text-sm text-muted-foreground">Generating questions...</p>
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-3">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">Generating questions...</p>
+              </div>
             </div>
           ) : currentQ ? (
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-4 pt-2">
               {/* Progress dots */}
               <div className="flex justify-center gap-1.5">
                 {practiceQuestions.map((_, i) => (
@@ -286,51 +390,161 @@ A5: [answer text]`,
 
               {/* Question card */}
               <Card className="p-6">
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">
-                  Question {currentQIndex + 1}
-                </p>
+                <div className="flex items-center gap-2 mb-3">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider">
+                    Question {currentQIndex + 1}
+                  </p>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                    currentQ.type === "objective"
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-secondary text-secondary-foreground"
+                  }`}>
+                    {currentQ.type === "objective" ? "MCQ" : "Descriptive"}
+                  </span>
+                </div>
                 <div className="text-foreground leading-relaxed">
                   <ReactMarkdown>{currentQ.question}</ReactMarkdown>
                 </div>
               </Card>
 
-              {/* Your answer + Correct answer */}
-              {!showAnswer && (
+              {/* OBJECTIVE: MCQ Options */}
+              {currentQ.type === "objective" && currentQ.options && (
+                <div className="space-y-2">
+                  {currentQ.options.map((option, i) => {
+                    const correctIdx = getCorrectOptionIndex(currentQ);
+                    const isSelected = selectedOption === i;
+                    const isCorrect = i === correctIdx;
+                    const isLocked = isAnswerLocked;
+
+                    let optionClasses = "w-full text-left p-4 rounded-lg border-2 transition-all text-sm ";
+
+                    if (!isLocked) {
+                      optionClasses += "border-border hover:border-primary/50 hover:bg-accent/50 cursor-pointer";
+                    } else if (isSelected && isCorrect) {
+                      optionClasses += "border-success bg-success/10 text-foreground";
+                    } else if (isSelected && !isCorrect) {
+                      optionClasses += "border-destructive bg-destructive/10 text-foreground";
+                    } else if (isCorrect && showAnswer) {
+                      optionClasses += "border-success bg-success/10 text-foreground";
+                    } else {
+                      optionClasses += "border-border opacity-60";
+                    }
+
+                    return (
+                      <button
+                        key={i}
+                        className={optionClasses}
+                        onClick={() => handleSelectOption(i)}
+                        disabled={isLocked}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
+                            isLocked && isSelected && isCorrect
+                              ? "bg-success text-success-foreground border-success"
+                              : isLocked && isSelected && !isCorrect
+                              ? "bg-destructive text-destructive-foreground border-destructive"
+                              : isLocked && isCorrect && showAnswer
+                              ? "bg-success text-success-foreground border-success"
+                              : "border-muted-foreground/30 text-muted-foreground"
+                          }`}>
+                            {"ABCD"[i]}
+                          </span>
+                          <span className="flex-1">{option}</span>
+                          {isLocked && isSelected && isCorrect && (
+                            <Check className="h-5 w-5 text-success flex-shrink-0" />
+                          )}
+                          {isLocked && isSelected && !isCorrect && (
+                            <X className="h-5 w-5 text-destructive flex-shrink-0" />
+                          )}
+                          {isLocked && !isSelected && isCorrect && showAnswer && (
+                            <Check className="h-5 w-5 text-success flex-shrink-0" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {/* Result feedback after selection */}
+                  {isAnswerLocked && selectedOption !== null && (
+                    <div className={`flex items-center gap-2 p-3 rounded-lg text-sm font-medium ${
+                      selectedOption === getCorrectOptionIndex(currentQ)
+                        ? "bg-success/10 text-success"
+                        : "bg-destructive/10 text-destructive"
+                    }`}>
+                      {selectedOption === getCorrectOptionIndex(currentQ) ? (
+                        <>
+                          <CheckCircle className="h-4 w-4" />
+                          Correct! Well done.
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-4 w-4" />
+                          Incorrect. Reveal the answer to see the correct option.
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SUBJECTIVE: Text answer */}
+              {currentQ.type === "subjective" && (
                 <div className="space-y-3">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-1.5">Your Answer</p>
                     <textarea
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[80px] resize-none"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[100px] resize-none disabled:opacity-60 disabled:cursor-not-allowed"
                       placeholder="Type your answer here..."
                       value={userAnswer}
                       onChange={(e) => setUserAnswer(e.target.value)}
+                      disabled={isAnswerLocked}
                     />
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setShowAnswer(true)}
-                  >
-                    Reveal Correct Answer
-                  </Button>
+                  {!isAnswerLocked && (
+                    <Button
+                      className="w-full"
+                      onClick={handleSubjectiveSubmit}
+                      disabled={!userAnswer.trim()}
+                    >
+                      Submit Answer
+                    </Button>
+                  )}
+                  {isAnswerLocked && !showAnswer && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-primary/10 text-primary text-sm font-medium">
+                      <CheckCircle className="h-4 w-4" />
+                      Answer submitted! Reveal to compare with the correct answer.
+                    </div>
+                  )}
                 </div>
               )}
 
-              {showAnswer && (
+              {/* Reveal Answer button — only after attempting */}
+              {isAnswerLocked && !showAnswer && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowAnswer(true)}
+                >
+                  Reveal Correct Answer
+                </Button>
+              )}
+
+              {/* Revealed answer for subjective */}
+              {showAnswer && currentQ.type === "subjective" && (
                 <>
                   {userAnswer.trim() && (
                     <Card className="p-4 border-primary/20 bg-primary/5">
                       <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
                         Your Answer
                       </p>
-                      <p className="text-sm text-foreground">{userAnswer}</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap">{userAnswer}</p>
                     </Card>
                   )}
                   <Card className="p-6 border-success/30 bg-success/5">
                     <p className="text-xs font-semibold text-success uppercase tracking-wider mb-3">
                       Correct Answer
                     </p>
-                    <div className="text-foreground leading-relaxed">
+                    <div className="prose prose-sm max-w-none text-foreground">
                       <ReactMarkdown>{currentQ.answer}</ReactMarkdown>
                     </div>
                   </Card>
@@ -339,19 +553,13 @@ A5: [answer text]`,
 
               {/* Navigation */}
               {showAnswer && (
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-2">
                   {currentQIndex < practiceQuestions.length - 1 ? (
-                    <Button
-                      onClick={() => {
-                        setCurrentQIndex((i) => i + 1);
-                        setShowAnswer(false);
-                        setUserAnswer("");
-                      }}
-                    >
+                    <Button onClick={goToNextQuestion}>
                       Next Question <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   ) : (
-                    <Button onClick={() => { setPracticeMode(false); setShowAnswer(false); }}>
+                    <Button onClick={() => { setPracticeMode(false); setShowAnswer(false); setIsAnswerLocked(false); }}>
                       Done — Back to Learning
                     </Button>
                   )}
