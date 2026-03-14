@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { format } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import {
-  CalendarIcon, Loader2, Sparkles, Clock, BookOpen, Brain, ClipboardList,
-  Target, Trophy, Zap, TrendingUp, Plus, Trash2,
+  CalendarIcon, Loader2, Sparkles, Clock,
+  Target, Plus, Trash2, Timer,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -23,11 +22,9 @@ import {
   streamExplanation,
   saveStudyPlan,
   fetchStudyPlans,
-  fetchExamResults,
   addTopic,
   deleteTopic,
   StudyPlan,
-  ExamResult,
 } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -49,7 +46,6 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);
   const [showSaved, setShowSaved] = useState(false);
-  const [examResults, setExamResults] = useState<ExamResult[]>([]);
 
   // Add topics state
   const [topicName, setTopicName] = useState("");
@@ -67,31 +63,19 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
         setHoursPerDay(String(plans[0].hours_per_day));
       }
     }).catch(() => {});
-    fetchExamResults().then(setExamResults).catch(() => {});
   }, []);
 
   // Progress calculations
   const totalMarks = topics.reduce((s, t) => s + t.marks_weightage, 0);
   const coveredMarks = topics.filter((t) => t.is_completed).reduce((s, t) => s + t.marks_weightage, 0);
   const totalMinutes = topics.reduce((s, t) => s + t.time_spent_minutes, 0);
-  const completedCount = topics.filter((t) => t.is_completed).length;
-  const hours = totalMinutes / 60;
-  const efficiency = hours > 0 ? (coveredMarks / hours).toFixed(1) : "—";
   const progressPct = totalMarks > 0 ? (coveredMarks / totalMarks) * 100 : 0;
-  const confidentCount = topics.filter((t) => t.confidence === "confident").length;
-  const somewhatCount = topics.filter((t) => t.confidence === "somewhat").length;
-  const notConfidentCount = topics.filter((t) => t.confidence === "not_confident").length;
-  const unratedCount = topics.filter((t) => !t.confidence).length;
-  const confidentPct = topics.length ? Math.round((confidentCount / topics.length) * 100) : 0;
-  const somewhatPct = topics.length ? Math.round((somewhatCount / topics.length) * 100) : 0;
-  const notConfidentPct = topics.length ? Math.round((notConfidentCount / topics.length) * 100) : 0;
-  const unratedPct = topics.length ? Math.round((unratedCount / topics.length) * 100) : 0;
-  const avgExamScore = examResults.length
-    ? Math.round(examResults.reduce((s, r) => s + r.score_percentage, 0) / examResults.length)
-    : null;
-  const weakTopics = topics.filter((t) => t.confidence === "not_confident" || t.confidence === "somewhat");
-  const topByTime = [...topics].sort((a, b) => b.time_spent_minutes - a.time_spent_minutes).slice(0, 5);
-  const maxTime = topByTime[0]?.time_spent_minutes || 1;
+
+  // Time remaining calculation
+  const daysLeft = examDate ? Math.max(0, differenceInDays(examDate, new Date())) : null;
+  const totalHoursAvailable = daysLeft !== null ? daysLeft * (parseFloat(hoursPerDay) || 3) : null;
+  const hoursInvested = totalMinutes / 60;
+  const hoursRemaining = totalHoursAvailable !== null ? Math.max(0, totalHoursAvailable - hoursInvested) : null;
 
   const handleAddTopic = async () => {
     if (!topicName.trim()) { toast.error("Enter a topic name"); return; }
@@ -186,85 +170,59 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
       <div>
         <h1 className="text-2xl font-bold text-foreground">Prep Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Your preparation hub — plan, track progress, and jump into study modes
+          Track your progress and manage your study plan
         </p>
       </div>
 
-      {/* Quick actions */}
-      {topics.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Card
-            className="p-4 cursor-pointer hover:shadow-md transition-shadow border-primary/20 hover:border-primary/40"
-            onClick={() => onNavigate("learn")}
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <BookOpen className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground text-sm">Learn</p>
-                <p className="text-xs text-muted-foreground">Study a topic</p>
-              </div>
-            </div>
-          </Card>
-          <Card
-            className="p-4 cursor-pointer hover:shadow-md transition-shadow border-warning/20 hover:border-warning/40"
-            onClick={() => onNavigate("revise")}
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-warning/10 flex items-center justify-center">
-                <Brain className="h-4 w-4 text-warning" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground text-sm">Revise</p>
-                <p className="text-xs text-muted-foreground">Flashcard review</p>
-              </div>
-            </div>
-          </Card>
-          <Card
-            className="p-4 cursor-pointer hover:shadow-md transition-shadow border-destructive/20 hover:border-destructive/40"
-            onClick={() => onNavigate("exam")}
-          >
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <ClipboardList className="h-4 w-4 text-destructive" />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground text-sm">Test Mode</p>
-                <p className="text-xs text-muted-foreground">Take a mock exam</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+      {/* Current Study Plan (shown at top if exists) */}
+      {planContent && (
+        <Card className="p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-primary" />
+            Current Study Plan
+          </h3>
+          <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0 border border-border rounded-lg p-4 max-h-72 overflow-y-auto">
+            <ReactMarkdown>{planContent}</ReactMarkdown>
+          </div>
+        </Card>
       )}
 
-      {/* Progress stats (only when topics exist) */}
+      {/* Progress stats */}
       {topics.length > 0 && (
-        <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Target className="h-4 w-4 text-primary" />
-                <span className="text-xs font-medium text-muted-foreground">Score Potential</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {totalMarks > 0 ? Math.round(progressPct) : 0}%
-              </p>
-              <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-4 w-4 text-warning" />
-                <span className="text-xs font-medium text-muted-foreground">Time</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {totalMinutes < 60 ? `${totalMinutes}m` : `${(totalMinutes / 60).toFixed(1)}h`}
-              </p>
-              <p className="text-xs text-muted-foreground">{topics.length} topics</p>
-            </Card>
-          </div>
-
-        </>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Target className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium text-muted-foreground">Score Potential</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {totalMarks > 0 ? Math.round(progressPct) : 0}%
+            </p>
+            <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-warning" />
+              <span className="text-xs font-medium text-muted-foreground">Time Invested</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {totalMinutes < 60 ? `${totalMinutes}m` : `${hoursInvested.toFixed(1)}h`}
+            </p>
+            <p className="text-xs text-muted-foreground">{topics.length} topics</p>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Timer className="h-4 w-4 text-destructive" />
+              <span className="text-xs font-medium text-muted-foreground">Time Remaining</span>
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {hoursRemaining !== null ? `${hoursRemaining.toFixed(0)}h` : "—"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left` : "Set exam date"}
+            </p>
+          </Card>
+        </div>
       )}
 
       {/* Add Topics Section */}
@@ -284,7 +242,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
 
         {(showAddTopics || topics.length === 0) && (
           <div className="mt-4 space-y-4">
-            {/* Single add */}
             <div className="flex gap-2">
               <Input
                 placeholder="Topic name"
@@ -306,7 +263,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
               </Button>
             </div>
 
-            {/* Bulk add */}
             <div>
               <p className="text-xs text-muted-foreground mb-2">
                 Bulk add — one per line: Topic Name, Marks (e.g. "Thermodynamics, 10")
@@ -322,7 +278,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
               </Button>
             </div>
 
-            {/* Topic list */}
             {topics.length > 0 && (
               <div className="divide-y divide-border max-h-48 overflow-y-auto">
                 {topics.map((t) => (
@@ -347,9 +302,11 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
         )}
       </Card>
 
-      {/* Plan Configuration */}
+      {/* Generate Study Plan */}
       <Card className="p-5 space-y-4">
-        <h3 className="text-sm font-semibold text-foreground">Generate Study Plan</h3>
+        <h3 className="text-sm font-semibold text-foreground">
+          {hasPlan ? "Regenerate Study Plan" : "Generate Study Plan"}
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Subject</label>
@@ -405,19 +362,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
           </div>
         </div>
 
-        {/* Current plan displayed above generate button */}
-        {planContent && (
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              Current Study Plan
-            </h3>
-            <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0 mb-4 border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
-              <ReactMarkdown>{planContent}</ReactMarkdown>
-            </div>
-          </div>
-        )}
-
         <Button onClick={generatePlan} disabled={loading || !examDate} className="w-full" size="lg">
           {loading ? (
             <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Plan...</>
@@ -428,78 +372,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
           )}
         </Button>
       </Card>
-
-      {/* Confidence & detailed progress (collapsible) */}
-      {topics.length > 0 && (
-        <>
-          <Card className="p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Confidence Distribution</h3>
-            <div className="space-y-3">
-              <ConfidenceBar label="Confident" count={confidentCount} pct={confidentPct} color="bg-success" />
-              <ConfidenceBar label="Somewhat" count={somewhatCount} pct={somewhatPct} color="bg-warning" />
-              <ConfidenceBar label="Not Confident" count={notConfidentCount} pct={notConfidentPct} color="bg-destructive" />
-              <ConfidenceBar label="Unrated" count={unratedCount} pct={unratedPct} color="bg-muted-foreground/30" />
-            </div>
-          </Card>
-
-          {topByTime.some((t) => t.time_spent_minutes > 0) && (
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold text-foreground mb-4">Time Spent (Top 5)</h3>
-              <div className="space-y-3">
-                {topByTime.map((t) => (
-                  <div key={t.id} className="flex items-center gap-3">
-                    <span className="text-xs text-foreground w-32 truncate">{t.name}</span>
-                    <div className="flex-1 h-5 bg-border/50 rounded-full overflow-hidden">
-                      <div className="h-full bg-primary/70 rounded-full transition-all" style={{ width: `${(t.time_spent_minutes / maxTime) * 100}%` }} />
-                    </div>
-                    <span className="text-xs text-muted-foreground w-12 text-right">{t.time_spent_minutes}m</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {examResults.length > 0 && (
-            <Card className="p-5">
-              <h3 className="text-sm font-semibold text-foreground mb-4">Test History</h3>
-              <div className="space-y-2">
-                {examResults.slice(0, 5).map((r) => (
-                  <div key={r.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div>
-                      <p className="text-sm text-foreground">{r.correct_answers}/{r.total_questions} correct</p>
-                      <p className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()} · {Math.round(r.duration_seconds / 60)}m</p>
-                    </div>
-                    <span className={`text-lg font-bold ${r.score_percentage >= 70 ? "text-success" : r.score_percentage >= 40 ? "text-warning" : "text-destructive"}`}>
-                      {Math.round(r.score_percentage)}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {weakTopics.length > 0 && (
-            <Card className="p-5 border-destructive/20">
-              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-destructive" />
-                Areas Needing Improvement
-              </h3>
-              <div className="space-y-2">
-                {weakTopics.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between">
-                    <span className="text-sm text-foreground">{t.name}</span>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      t.confidence === "not_confident" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
-                    }`}>
-                      {t.confidence === "not_confident" ? "Weak" : "Moderate"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
-        </>
-      )}
 
       {/* Saved plans */}
       {savedPlans.length > 1 && (
@@ -519,18 +391,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function ConfidenceBar({ label, count, pct, color }: { label: string; count: number; pct: number; color: string }) {
-  return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-muted-foreground w-28">{label} ({count})</span>
-      <div className="flex-1 h-4 bg-border/50 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-xs font-medium text-foreground w-10 text-right">{pct}%</span>
     </div>
   );
 }
