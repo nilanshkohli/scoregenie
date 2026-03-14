@@ -13,12 +13,15 @@ import {
 } from "@/lib/api";
 import { toast } from "sonner";
 import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   topic: Topic;
+  topics: Topic[];
   onTopicUpdate: () => void;
   onNextTopic?: () => void;
   hasNextTopic?: boolean;
+  onSelectTopic: (id: string) => void;
 };
 
 type PracticeQuestion = {
