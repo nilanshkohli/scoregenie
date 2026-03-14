@@ -135,23 +135,33 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
 
     const msg: Msg = {
       role: "user",
-      content: `Create a detailed study plan for ${subjectName ? `the subject "${subjectName}"` : "an exam"} on ${format(examDate, "PPP")} (${daysLeft} days away).
+      content: `Create a study plan for ${subjectName ? `the subject "${subjectName}"` : "an exam"} on ${format(examDate, "PPP")} (${daysLeft} days away).
 The student can study ${hrs} hours per day.
 The student is aiming to score ${targetScore}% in this exam.
 
 Topics:
 ${topicSummary}
 
-Create a day-by-day study schedule that:
+Structure the output in exactly TWO sections:
+
+## Strategic Overview
+Provide a brief strategic summary (5-8 bullet points) covering:
+- Overall approach and priority order
+- Which topics are critical vs can be deprioritized given the ${targetScore}% target
+- Key milestones and checkpoints
+- Risk areas and how to handle them
+- Recommended study techniques for weak areas
+
+## Day-by-Day Study Plan
+Create a detailed day-by-day schedule that:
 1. Prioritizes weak/unrated topics first
-2. Allocates more time to high-marks topics to help reach the ${targetScore}% target
+2. Allocates more time to high-marks topics
 3. Includes revision days before the exam
 4. Balances study sessions with breaks
 5. Includes specific actions for each day (study, practice, revise)
 6. Schedules mock exams at regular intervals
-7. Suggests which topics to focus on vs skip if time is limited, given the target score
 
-Format as a clear, actionable markdown schedule with days, topics, and time allocations.`,
+Format as clear, actionable markdown.`,
     };
 
     let fullResponse = "";
