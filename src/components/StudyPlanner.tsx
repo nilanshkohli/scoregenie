@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { format, differenceInDays } from "date-fns";
 import {
   CalendarIcon, Loader2, Sparkles, Clock,
-  Target, Plus, Trash2, Timer,
+  Target, Plus, Trash2, Timer, CheckCircle, Play,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,12 @@ import {
   addTopic,
   deleteTopic,
   StudyPlan,
+  ExamResult,
+  fetchExamResults,
 } from "@/lib/api";
 import { toast } from "sonner";
 
-type View = "planner" | "learn" | "revise" | "exam";
+type View = "planner" | "learn" | "revise" | "exam" | "group";
 
 type Props = {
   topics: Topic[];
@@ -47,6 +49,7 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);
   const [showSaved, setShowSaved] = useState(false);
+  const [examResults, setExamResults] = useState<ExamResult[]>([]);
 
   // Add topics state
   const [topicName, setTopicName] = useState("");
@@ -61,9 +64,9 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
       if (plans.length > 0 && !planContent) {
         setPlanContent(plans[0].plan_content);
         setExamDate(new Date(plans[0].exam_date));
-        // hours_per_day no longer set by user
       }
     }).catch(() => {});
+    fetchExamResults().then(setExamResults).catch(() => {});
   }, []);
 
   // Progress calculations
@@ -121,9 +124,13 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
     catch { toast.error("Failed"); }
   };
 
+  const latestResult = examResults.length > 0 ? examResults[0] : null;
+  const hasMiniTest = examResults.length > 0;
+
   const generatePlan = async () => {
     if (!examDate) { toast.error("Please select an exam date"); return; }
     if (topics.length === 0) { toast.error("Add topics first"); return; }
+    if (!hasMiniTest) { toast.error("Take a Mini Test first to assess your level"); return; }
 
     setLoading(true);
     setPlanContent("");
@@ -134,20 +141,30 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
       .map((t) => `- ${t.name} (${t.marks_weightage} marks, confidence: ${t.confidence || "unrated"}, time spent: ${t.time_spent_minutes}m)`)
       .join("\n");
 
+    // Include mini test results for personalized planning
+    const testSummary = latestResult
+      ? `\nDiagnostic Mini Test Results:\n- Score: ${latestResult.score_percentage}% (${latestResult.correct_answers}/${latestResult.total_questions} correct)\n- Duration: ${Math.round(latestResult.duration_seconds / 60)} minutes\n- Date taken: ${new Date(latestResult.created_at).toLocaleDateString()}\n`
+      : "";
+
     const msg: Msg = {
       role: "user",
       content: `Create a study plan for ${subjectName ? `the subject "${subjectName}"` : "an exam"} on ${format(examDate, "PPP")} (${daysLeft} days away).
 The student can study ${hrs} hours per day.
 The student is aiming to score ${targetScore}% in this exam.
-
+${testSummary}
 Topics:
 ${topicSummary}
+
+Based on the student's mini test performance (${latestResult?.score_percentage ?? 0}%), tailor the plan to their current capability level.
+${(latestResult?.score_percentage ?? 0) < 40 ? "The student needs significant foundational work. Focus on basics and build confidence gradually." : ""}
+${(latestResult?.score_percentage ?? 0) >= 40 && (latestResult?.score_percentage ?? 0) < 70 ? "The student has a moderate understanding. Focus on strengthening weak areas and building depth." : ""}
+${(latestResult?.score_percentage ?? 0) >= 70 ? "The student has a strong base. Focus on mastery, edge cases, and exam strategy." : ""}
 
 Structure the output in exactly TWO sections:
 
 ## Strategic Overview
 Provide a brief strategic summary (5-8 bullet points) covering:
-- Overall approach and priority order
+- Overall approach and priority order based on the student's current level (${latestResult?.score_percentage ?? 0}%)
 - Which topics are critical vs can be deprioritized given the ${targetScore}% target
 - Key milestones and checkpoints
 - Risk areas and how to handle them
@@ -403,7 +420,48 @@ Format as clear, actionable markdown.`,
           />
         </div>
 
-        <Button onClick={generatePlan} disabled={loading || !examDate || topics.length === 0} className="w-full" size="lg">
+        {/* Step 5: Mini Test Gate */}
+        {topics.length > 0 && (
+          <div>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
+              5. Diagnostic Mini Test
+            </label>
+            {hasMiniTest ? (
+              <Card className="p-4 bg-green-500/10 border-green-500/20">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <span className="text-sm font-semibold text-foreground">Mini Test Completed</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Score: <span className="font-bold text-foreground">{latestResult?.score_percentage}%</span>
+                  {" · "}
+                  {latestResult?.correct_answers}/{latestResult?.total_questions} correct
+                  {" · "}
+                  {latestResult && Math.round(latestResult.duration_seconds / 60)}min
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your study plan will be customized based on this performance.
+                </p>
+              </Card>
+            ) : (
+              <Card className="p-4 bg-amber-500/10 border-amber-500/20">
+                <div className="flex items-center gap-2 mb-2">
+                  <Timer className="h-4 w-4 text-amber-500" />
+                  <span className="text-sm font-semibold text-foreground">Take a Mini Test First</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  A quick diagnostic test will assess your current level so we can create a study plan tailored to your capability.
+                </p>
+                <Button onClick={() => onNavigate("exam")} variant="outline" size="sm" className="gap-2">
+                  <Play className="h-3.5 w-3.5" />
+                  Take Mini Test
+                </Button>
+              </Card>
+            )}
+          </div>
+        )}
+
+        <Button onClick={generatePlan} disabled={loading || !examDate || topics.length === 0 || !hasMiniTest} className="w-full" size="lg">
           {loading ? (
             <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Plan...</>
           ) : hasPlan ? (
@@ -412,6 +470,11 @@ Format as clear, actionable markdown.`,
             <><Sparkles className="h-5 w-5 mr-2" /> Generate Study Plan</>
           )}
         </Button>
+        {!hasMiniTest && topics.length > 0 && (
+          <p className="text-xs text-center text-muted-foreground">
+            Complete a Mini Test to unlock study plan generation
+          </p>
+        )}
       </Card>
 
       {/* Saved plans */}
