@@ -1,13 +1,15 @@
 import { Topic } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, BookOpen, Target, Zap } from "lucide-react";
+import { Clock, BookOpen, Target, Zap, Brain } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   topics: Topic[];
+  onStartRevision: () => void;
 };
 
-export default function Dashboard({ topics }: Props) {
+export default function Dashboard({ topics, onStartRevision }: Props) {
   const totalMarks = topics.reduce((s, t) => s + t.marks_weightage, 0);
   const coveredMarks = topics
     .filter((t) => t.is_completed)
@@ -102,6 +104,14 @@ export default function Dashboard({ topics }: Props) {
         </div>
         <Progress value={progressPct} className="h-2" />
       </Card>
+
+      {/* Quick Revise Button */}
+      {topics.length > 0 && (
+        <Button onClick={onStartRevision} className="w-full" size="lg">
+          <Brain className="h-5 w-5 mr-2" />
+          Start Smart Revision
+        </Button>
+      )}
 
       {/* Confidence Distribution */}
       {topics.length > 0 && (

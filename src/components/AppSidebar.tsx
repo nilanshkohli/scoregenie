@@ -1,4 +1,4 @@
-import { BookOpen, BarChart3, Plus, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { BookOpen, BarChart3, Plus, Trash2, ChevronLeft, ChevronRight, Brain } from "lucide-react";
 import { Topic } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ type Props = {
   topics: Topic[];
   selectedTopicId: string | null;
   onSelectTopic: (id: string) => void;
-  onNavigate: (view: "dashboard" | "syllabus" | "learn") => void;
+  onNavigate: (view: "dashboard" | "syllabus" | "learn" | "revise") => void;
   currentView: string;
   collapsed: boolean;
   onToggleCollapse: () => void;
@@ -74,6 +74,18 @@ export default function AppSidebar({
         >
           <Plus className="h-4 w-4 shrink-0" />
           {!collapsed && "Add Topics"}
+        </button>
+        <button
+          onClick={() => onNavigate("revise")}
+          className={cn(
+            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            currentView === "revise"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          )}
+        >
+          <Brain className="h-4 w-4 shrink-0" />
+          {!collapsed && "Revise"}
         </button>
       </nav>
 
