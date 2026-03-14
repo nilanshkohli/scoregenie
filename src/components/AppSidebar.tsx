@@ -1,17 +1,29 @@
-import { BookOpen, BarChart3, Plus, Trash2, ChevronLeft, ChevronRight, Brain } from "lucide-react";
+import { BookOpen, BarChart3, Plus, ChevronLeft, ChevronRight, Brain, ClipboardList, TrendingUp, Calendar, FileText } from "lucide-react";
 import { Topic } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+type View = "dashboard" | "syllabus" | "learn" | "revise" | "exam" | "analytics" | "planner" | "notes";
 
 type Props = {
   topics: Topic[];
   selectedTopicId: string | null;
   onSelectTopic: (id: string) => void;
-  onNavigate: (view: "dashboard" | "syllabus" | "learn" | "revise") => void;
+  onNavigate: (view: View) => void;
   currentView: string;
   collapsed: boolean;
   onToggleCollapse: () => void;
 };
+
+const navItems: { view: View; label: string; icon: typeof BookOpen }[] = [
+  { view: "dashboard", label: "Dashboard", icon: BarChart3 },
+  { view: "syllabus", label: "Add Topics", icon: Plus },
+  { view: "revise", label: "Revise", icon: Brain },
+  { view: "exam", label: "Mock Exam", icon: ClipboardList },
+  { view: "planner", label: "Study Plan", icon: Calendar },
+  { view: "analytics", label: "Analytics", icon: TrendingUp },
+  { view: "notes", label: "Notes", icon: FileText },
+];
 
 export default function AppSidebar({
   topics,
@@ -50,43 +62,23 @@ export default function AppSidebar({
         </Button>
       </div>
 
-      <nav className="flex flex-col gap-1 p-2">
-        <button
-          onClick={() => onNavigate("dashboard")}
-          className={cn(
-            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-            currentView === "dashboard"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          )}
-        >
-          <BarChart3 className="h-4 w-4 shrink-0" />
-          {!collapsed && "Dashboard"}
-        </button>
-        <button
-          onClick={() => onNavigate("syllabus")}
-          className={cn(
-            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-            currentView === "syllabus"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          )}
-        >
-          <Plus className="h-4 w-4 shrink-0" />
-          {!collapsed && "Add Topics"}
-        </button>
-        <button
-          onClick={() => onNavigate("revise")}
-          className={cn(
-            "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-            currentView === "revise"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          )}
-        >
-          <Brain className="h-4 w-4 shrink-0" />
-          {!collapsed && "Revise"}
-        </button>
+      <nav className="flex flex-col gap-0.5 p-2">
+        {navItems.map((item) => (
+          <button
+            key={item.view}
+            onClick={() => onNavigate(item.view)}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              currentView === item.view
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+            title={collapsed ? item.label : undefined}
+          >
+            <item.icon className="h-4 w-4 shrink-0" />
+            {!collapsed && item.label}
+          </button>
+        ))}
       </nav>
 
       {!collapsed && topics.length > 0 && (
