@@ -1,4 +1,4 @@
-import { BookOpen, ChevronLeft, ChevronRight, Brain, ClipboardList, Calendar } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Brain, ClipboardList, LayoutDashboard } from "lucide-react";
 import { Topic } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
