@@ -584,9 +584,16 @@ CORRECT: [A/B/C/D]`,
             {topic.marks_weightage} score potential
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handlePractice} disabled={loading}>
-          Practice Questions
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handlePractice} disabled={loading}>
+            Practice Questions
+          </Button>
+          {hasNextTopic && onNextTopic && (
+            <Button variant="default" size="sm" onClick={onNextTopic}>
+              Next Topic <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Chat area */}
