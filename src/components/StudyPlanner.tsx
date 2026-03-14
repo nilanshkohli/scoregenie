@@ -71,19 +71,19 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
   const totalMinutes = topics.reduce((s, t) => s + t.time_spent_minutes, 0);
   const progressPct = totalMarks > 0 ? (coveredMarks / totalMarks) * 100 : 0;
 
-  // Smart hours/day suggestion
+  // Progress-based calculations
   const hoursInvested = totalMinutes / 60;
   const daysLeft = examDate ? Math.max(1, differenceInDays(examDate, new Date())) : null;
   const target = Math.min(100, Math.max(1, parseInt(targetScore) || 80));
-  const estimatedTotalHours = Math.max(1, (topics.length * 0.67 * (target / 70)) - hoursInvested);
-  const suggestedHoursPerDay = daysLeft !== null
-    ? Math.min(8, Math.max(1, Math.round(estimatedTotalHours / daysLeft * 10) / 10))
-    : 3;
-  const hoursPerDay = suggestedHoursPerDay;
 
-  // Time remaining calculation
-  const totalHoursAvailable = daysLeft !== null ? daysLeft * hoursPerDay : null;
-  const hoursRemaining = totalHoursAvailable !== null ? Math.max(0, totalHoursAvailable - hoursInvested) : null;
+  // Dynamic time remaining: based on how much progress is left relative to target
+  const progressTowardTarget = totalMarks > 0 ? Math.min(1, progressPct / target) : 0;
+  const estimatedTotalHours = Math.max(1, topics.length * 0.67 * (target / 70));
+  const estimatedRemainingHours = Math.max(0, estimatedTotalHours * (1 - progressTowardTarget));
+  const hoursPerDay = daysLeft !== null
+    ? Math.min(8, Math.max(0.5, Math.round(estimatedRemainingHours / daysLeft * 10) / 10))
+    : null;
+
 
   const handleAddTopic = async () => {
     if (!topicName.trim()) { toast.error("Enter a topic name"); return; }
