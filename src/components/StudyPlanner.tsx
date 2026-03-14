@@ -37,12 +37,13 @@ type Props = {
   topics: Topic[];
   onNavigate: (view: View) => void;
   onRefresh: () => void;
+  subjectName: string;
+  onSubjectNameChange: (name: string) => void;
 };
 
-export default function StudyPlanner({ topics, onNavigate, onRefresh }: Props) {
+export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange }: Props) {
   const [examDate, setExamDate] = useState<Date>();
   const [hoursPerDay, setHoursPerDay] = useState("3");
-  const [subjectName, setSubjectName] = useState("");
   const [targetScore, setTargetScore] = useState("80");
   const [loading, setLoading] = useState(false);
   const [planContent, setPlanContent] = useState("");
@@ -378,7 +379,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             <Input
               placeholder="e.g. Mathematics, Physics, History"
               value={subjectName}
-              onChange={(e) => setSubjectName(e.target.value)}
+              onChange={(e) => onSubjectNameChange(e.target.value)}
             />
           </div>
           <div>
