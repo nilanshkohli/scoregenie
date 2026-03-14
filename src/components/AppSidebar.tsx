@@ -1,8 +1,8 @@
-import { BookOpen, ChevronLeft, ChevronRight, Brain, ClipboardList, LayoutDashboard } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Brain, ClipboardList, LayoutDashboard, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type View = "planner" | "learn" | "revise" | "exam";
+type View = "planner" | "learn" | "revise" | "exam" | "group";
 
 type Props = {
   onNavigate: (view: View) => void;
@@ -17,6 +17,7 @@ const navItems: { view: View; label: string; icon: typeof BookOpen }[] = [
   { view: "learn", label: "Learn", icon: BookOpen },
   { view: "revise", label: "Revise", icon: Brain },
   { view: "exam", label: "Test Mode", icon: ClipboardList },
+  { view: "group", label: "Group Study", icon: Users },
 ];
 
 export default function AppSidebar({

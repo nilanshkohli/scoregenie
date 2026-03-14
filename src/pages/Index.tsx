@@ -6,8 +6,9 @@ import LearningLab from "@/components/LearningLab";
 import ReviseMode from "@/components/ReviseMode";
 import ExamSimulator from "@/components/ExamSimulator";
 import StudyPlanner from "@/components/StudyPlanner";
+import GroupStudy from "@/components/GroupStudy";
 
-type View = "planner" | "learn" | "revise" | "exam";
+type View = "planner" | "learn" | "revise" | "exam" | "group";
 
 function getNextTopic(topics: Topic[]): Topic | null {
   if (topics.length === 0) return null;
