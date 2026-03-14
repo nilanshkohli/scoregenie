@@ -17,6 +17,8 @@ import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateC
 type Props = {
   topic: Topic;
   onTopicUpdate: () => void;
+  onNextTopic?: () => void;
+  hasNextTopic?: boolean;
 };
 
 type PracticeQuestion = {
