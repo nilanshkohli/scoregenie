@@ -37,12 +37,13 @@ type Props = {
   topics: Topic[];
   onNavigate: (view: View) => void;
   onRefresh: () => void;
+  subjectName: string;
+  onSubjectNameChange: (name: string) => void;
 };
 
-export default function StudyPlanner({ topics, onNavigate, onRefresh }: Props) {
+export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange }: Props) {
   const [examDate, setExamDate] = useState<Date>();
   const [hoursPerDay, setHoursPerDay] = useState("3");
-  const [subjectName, setSubjectName] = useState("");
   const [targetScore, setTargetScore] = useState("80");
   const [loading, setLoading] = useState(false);
   const [planContent, setPlanContent] = useState("");
