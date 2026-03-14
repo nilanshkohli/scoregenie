@@ -282,7 +282,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
 
           <Card className="p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-foreground">Syllabus Coverage</span>
+              <span className="text-sm font-medium text-foreground">Score Potential</span>
               <span className="text-sm text-muted-foreground">{progressPct.toFixed(0)}%</span>
             </div>
             <Progress value={progressPct} className="h-2" />
