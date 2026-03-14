@@ -5,6 +5,7 @@ import { Clock, BookOpen, Target, Zap } from "lucide-react";
 
 type Props = {
   topics: Topic[];
+  onStartRevision: () => void;
 };
 
 export default function Dashboard({ topics }: Props) {
