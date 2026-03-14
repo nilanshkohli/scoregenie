@@ -274,7 +274,7 @@ ANSWER: [answer]`,
             {/* Suggested exam info */}
             <Card className="p-5 space-y-3">
               <h3 className="text-sm font-semibold text-foreground">Suggested Exam</h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 rounded-lg bg-accent/50">
                   <p className="text-xs text-muted-foreground">Questions</p>
                   <p className="text-lg font-bold text-foreground">{suggestedQuestionCount}</p>
@@ -282,6 +282,12 @@ ANSWER: [answer]`,
                 <div className="p-3 rounded-lg bg-accent/50">
                   <p className="text-xs text-muted-foreground">Time Limit</p>
                   <p className="text-lg font-bold text-foreground">{suggestedTimeMin} min</p>
+                </div>
+                <div className="p-3 rounded-lg bg-accent/50">
+                  <p className="text-xs text-muted-foreground">Difficulty</p>
+                  <p className={`text-lg font-bold ${targetScore <= 60 ? "text-success" : targetScore <= 80 ? "text-warning" : "text-destructive"}`}>
+                    {targetScore <= 60 ? "Basic" : targetScore <= 80 ? "Medium" : "Hard"}
+                  </p>
                 </div>
               </div>
               <div>
