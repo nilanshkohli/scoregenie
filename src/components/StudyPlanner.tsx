@@ -32,6 +32,8 @@ type Props = {
 export default function StudyPlanner({ topics, onNavigate }: Props) {
   const [examDate, setExamDate] = useState<Date>();
   const [hoursPerDay, setHoursPerDay] = useState("3");
+  const [subjectName, setSubjectName] = useState("");
+  const [targetScore, setTargetScore] = useState("80");
   const [loading, setLoading] = useState(false);
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);
@@ -71,19 +73,21 @@ export default function StudyPlanner({ topics, onNavigate }: Props) {
 
     const msg: Msg = {
       role: "user",
-      content: `Create a detailed study plan for an exam on ${format(examDate, "PPP")} (${daysLeft} days away).
+      content: `Create a detailed study plan for ${subjectName ? `the subject "${subjectName}"` : "an exam"} on ${format(examDate, "PPP")} (${daysLeft} days away).
 The student can study ${hours} hours per day.
+The student is aiming to score ${targetScore}% in this exam.
 
 Topics:
 ${topicSummary}
 
 Create a day-by-day study schedule that:
 1. Prioritizes weak/unrated topics first
-2. Allocates more time to high-marks topics
+2. Allocates more time to high-marks topics to help reach the ${targetScore}% target
 3. Includes revision days before the exam
 4. Balances study sessions with breaks
 5. Includes specific actions for each day (study, practice, revise)
 6. Schedules mock exams at regular intervals
+7. Suggests which topics to focus on vs skip if time is limited, given the target score
 
 Format as a clear, actionable markdown schedule with days, topics, and time allocations.`,
     };
@@ -175,9 +179,27 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
         </div>
       )}
 
-      {/* Configuration */}
       <Card className="p-5 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Subject</label>
+            <Input
+              placeholder="e.g. Mathematics, Physics, History"
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Target Score (%)</label>
+            <Input
+              type="number"
+              value={targetScore}
+              onChange={(e) => setTargetScore(e.target.value)}
+              min={1}
+              max={100}
+              placeholder="e.g. 80"
+            />
+          </div>
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Exam Date</label>
             <Popover>
