@@ -70,10 +70,19 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
   const totalMinutes = topics.reduce((s, t) => s + t.time_spent_minutes, 0);
   const progressPct = totalMarks > 0 ? (coveredMarks / totalMarks) * 100 : 0;
 
-  // Time remaining calculation
-  const daysLeft = examDate ? Math.max(0, differenceInDays(examDate, new Date())) : null;
-  const totalHoursAvailable = daysLeft !== null ? daysLeft * (parseFloat(hoursPerDay) || 3) : null;
+  // Smart hours/day suggestion
+  const daysLeft = examDate ? Math.max(1, differenceInDays(examDate, new Date())) : null;
+  const target = Math.min(100, Math.max(1, parseInt(targetScore) || 80));
+  // Estimate total hours needed: ~40min per topic base, scaled by target score, minus time already invested
+  const estimatedTotalHours = Math.max(1, (topics.length * 0.67 * (target / 70)) - hoursInvested);
   const hoursInvested = totalMinutes / 60;
+  const suggestedHoursPerDay = daysLeft !== null
+    ? Math.min(8, Math.max(1, Math.round(estimatedTotalHours / daysLeft * 10) / 10))
+    : 3;
+  const hoursPerDay = suggestedHoursPerDay;
+
+  // Time remaining calculation
+  const totalHoursAvailable = daysLeft !== null ? daysLeft * hoursPerDay : null;
   const hoursRemaining = totalHoursAvailable !== null ? Math.max(0, totalHoursAvailable - hoursInvested) : null;
 
   const handleAddTopic = async () => {
