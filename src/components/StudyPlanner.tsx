@@ -232,42 +232,45 @@ Format as clear, actionable markdown.`,
           </Card>
 
           {/* Progress Cards - Common styling */}
+          {/* Current Score Potential */}
           <Card className="p-4 bg-muted/50 border-muted">
             <div className="flex items-center gap-2 mb-1">
               <div className="h-5 w-5 rounded bg-background flex items-center justify-center">
                 <Target className="h-3 w-3 text-primary" />
               </div>
-              <span className="text-xs font-medium text-muted-foreground">Score Potential</span>
+              <span className="text-xs font-medium text-muted-foreground">Current Score Potential</span>
             </div>
             <p className="text-2xl font-bold text-foreground">
               {totalMarks > 0 ? Math.round(progressPct) : 0}%
             </p>
             <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
           </Card>
+
+          {/* Time Invested & Time Remaining — grouped */}
           <Card className="p-4 bg-muted/50 border-muted">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <div className="h-5 w-5 rounded bg-background flex items-center justify-center">
                 <Clock className="h-3 w-3 text-warning" />
               </div>
-              <span className="text-xs font-medium text-muted-foreground">Time Invested</span>
+              <span className="text-xs font-medium text-muted-foreground">Time Tracker</span>
             </div>
-            <p className="text-2xl font-bold text-foreground">
-              {totalMinutes < 60 ? `${totalMinutes}m` : `${hoursInvested.toFixed(1)}h`}
-            </p>
-            <p className="text-xs text-muted-foreground">{topics.length} topics</p>
-          </Card>
-          <Card className="p-4 bg-muted/50 border-muted">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-5 w-5 rounded bg-background flex items-center justify-center">
-                <Timer className="h-3 w-3 text-destructive" />
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Invested</p>
+                <p className="text-xl font-bold text-foreground">
+                  {totalMinutes < 60 ? `${totalMinutes}m` : `${hoursInvested.toFixed(1)}h`}
+                </p>
               </div>
-              <span className="text-xs font-medium text-muted-foreground">Time Remaining</span>
+              <div className="h-8 w-px bg-border" />
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Remaining</p>
+                <p className="text-xl font-bold text-foreground">
+                  {estimatedRemainingHours > 0 ? `${estimatedRemainingHours.toFixed(0)}h` : "—"}
+                </p>
+              </div>
             </div>
-            <p className="text-2xl font-bold text-foreground">
-              {estimatedRemainingHours > 0 ? `${estimatedRemainingHours.toFixed(0)}h` : "—"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left` : "Set exam date"}
+            <p className="text-xs text-muted-foreground mt-1.5">
+              {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left · ${topics.length} topics` : `${topics.length} topics`}
             </p>
           </Card>
         </div>
