@@ -43,7 +43,6 @@ type Props = {
 export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange, targetScore, onTargetScoreChange }: Props) {
   const [examDate, setExamDate] = useState<Date>();
   const [loading, setLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);
   const [showSaved, setShowSaved] = useState(false);
