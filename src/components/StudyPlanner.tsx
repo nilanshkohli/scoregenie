@@ -40,9 +40,9 @@ type Props = {
   onTargetScoreChange: (score: string) => void;
 };
 
-export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange }: Props) {
+export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange, targetScore, onTargetScoreChange }: Props) {
   const [examDate, setExamDate] = useState<Date>();
-  const [targetScore, setTargetScore] = useState("80");
+  const [loading, setLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);

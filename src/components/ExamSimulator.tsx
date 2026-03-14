@@ -34,7 +34,7 @@ type ExamQuestion = {
 
 type ExamState = "setup" | "running" | "results";
 
-export default function ExamSimulator({ topics }: Props) {
+export default function ExamSimulator({ topics, targetScore }: Props) {
   const [state, setState] = useState<ExamState>("setup");
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
