@@ -32,7 +32,7 @@ type PracticeQuestion = {
   options?: string[]; // For objective questions
 };
 
-export default function LearningLab({ topic, topics, onTopicUpdate, onNextTopic, hasNextTopic, onSelectTopic }: Props) {
+export default function LearningLab({ topic, topics, onTopicUpdate, onNextTopic, hasNextTopic, onSelectTopic, onAllCompleted }: Props) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
