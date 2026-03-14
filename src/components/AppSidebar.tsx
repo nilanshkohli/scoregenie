@@ -62,7 +62,14 @@ export default function AppSidebar({
             title={collapsed ? item.label : undefined}
           >
             <item.icon className="h-4 w-4 shrink-0" />
-            {!collapsed && item.label}
+            {!collapsed && (
+              <span className="flex items-center gap-1.5">
+                {item.label}
+                {item.view === "group" && (
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded-full leading-none">Soon</span>
+                )}
+              </span>
+            )}
           </button>
         ))}
       </nav>
