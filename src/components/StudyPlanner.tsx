@@ -358,16 +358,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
               </PopoverContent>
             </Popover>
           </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Suggested Hours/Day</label>
-            <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-border bg-muted/50">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">
-                {examDate && topics.length > 0 ? `${hoursPerDay}h` : "—"}
-              </span>
-              <span className="text-xs text-muted-foreground ml-auto">auto-calculated</span>
-            </div>
-          </div>
         </div>
 
         <Button onClick={generatePlan} disabled={loading || !examDate} className="w-full" size="lg">
