@@ -199,7 +199,7 @@ Format as clear, actionable markdown.`,
             <Clock className="h-4 w-4 text-primary" />
             Current Study Plan
           </h3>
-          <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0 border border-border rounded-lg p-4 max-h-72 overflow-y-auto">
+          <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0 border border-border rounded-lg p-4 max-h-[28rem] overflow-y-auto overflow-x-auto">
             <ReactMarkdown>{planContent}</ReactMarkdown>
           </div>
         </Card>
