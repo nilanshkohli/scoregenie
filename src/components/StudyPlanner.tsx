@@ -31,7 +31,7 @@ import {
 } from "@/lib/api";
 import { toast } from "sonner";
 
-type View = "planner" | "learn" | "revise" | "exam";
+type View = "planner" | "learn" | "revise" | "exam" | "group";
 
 type Props = {
   topics: Topic[];
