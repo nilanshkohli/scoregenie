@@ -14,7 +14,106 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          topic_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          topic_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_sessions: {
+        Row: {
+          duration_minutes: number | null
+          ended_at: string | null
+          id: string
+          started_at: string
+          topic_id: string
+        }
+        Insert: {
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          topic_id: string
+        }
+        Update: {
+          duration_minutes?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_sessions_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topics: {
+        Row: {
+          confidence: string | null
+          created_at: string
+          id: string
+          is_completed: boolean
+          marks_weightage: number
+          name: string
+          sort_order: number
+          time_spent_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          confidence?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          marks_weightage?: number
+          name: string
+          sort_order?: number
+          time_spent_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          confidence?: string | null
+          created_at?: string
+          id?: string
+          is_completed?: boolean
+          marks_weightage?: number
+          name?: string
+          sort_order?: number
+          time_spent_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
