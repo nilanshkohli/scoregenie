@@ -7,7 +7,7 @@ type Props = {
   topics: Topic[];
   selectedTopicId: string | null;
   onSelectTopic: (id: string) => void;
-  onNavigate: (view: "dashboard" | "syllabus" | "learn") => void;
+  onNavigate: (view: "dashboard" | "syllabus" | "learn" | "revise") => void;
   currentView: string;
   collapsed: boolean;
   onToggleCollapse: () => void;
