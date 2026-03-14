@@ -262,22 +262,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
               </p>
               <p className="text-xs text-muted-foreground">{topics.length} topics</p>
             </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="h-4 w-4 text-success" />
-                <span className="text-xs font-medium text-muted-foreground">Efficiency</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{efficiency}</p>
-              <p className="text-xs text-muted-foreground">score potential/hr</p>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Trophy className="h-4 w-4 text-primary" />
-                <span className="text-xs font-medium text-muted-foreground">Avg Score</span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{avgExamScore !== null ? `${avgExamScore}%` : "—"}</p>
-              <p className="text-xs text-muted-foreground">{examResults.length} test{examResults.length !== 1 ? "s" : ""}</p>
-            </Card>
           </div>
 
           <Card className="p-4">
