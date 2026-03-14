@@ -73,19 +73,21 @@ export default function StudyPlanner({ topics, onNavigate }: Props) {
 
     const msg: Msg = {
       role: "user",
-      content: `Create a detailed study plan for an exam on ${format(examDate, "PPP")} (${daysLeft} days away).
+      content: `Create a detailed study plan for ${subjectName ? `the subject "${subjectName}"` : "an exam"} on ${format(examDate, "PPP")} (${daysLeft} days away).
 The student can study ${hours} hours per day.
+The student is aiming to score ${targetScore}% in this exam.
 
 Topics:
 ${topicSummary}
 
 Create a day-by-day study schedule that:
 1. Prioritizes weak/unrated topics first
-2. Allocates more time to high-marks topics
+2. Allocates more time to high-marks topics to help reach the ${targetScore}% target
 3. Includes revision days before the exam
 4. Balances study sessions with breaks
 5. Includes specific actions for each day (study, practice, revise)
 6. Schedules mock exams at regular intervals
+7. Suggests which topics to focus on vs skip if time is limited, given the target score
 
 Format as a clear, actionable markdown schedule with days, topics, and time allocations.`,
     };
