@@ -46,6 +46,95 @@ export type Database = {
           },
         ]
       }
+      exam_results: {
+        Row: {
+          correct_answers: number
+          created_at: string
+          duration_seconds: number
+          id: string
+          score_percentage: number
+          topic_ids: string[]
+          total_questions: number
+        }
+        Insert: {
+          correct_answers?: number
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          score_percentage?: number
+          topic_ids?: string[]
+          total_questions?: number
+        }
+        Update: {
+          correct_answers?: number
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          score_percentage?: number
+          topic_ids?: string[]
+          total_questions?: number
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_bookmarked: boolean
+          topic_id: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean
+          topic_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_bookmarked?: boolean
+          topic_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_plans: {
+        Row: {
+          created_at: string
+          exam_date: string
+          hours_per_day: number
+          id: string
+          plan_content: string
+        }
+        Insert: {
+          created_at?: string
+          exam_date: string
+          hours_per_day?: number
+          id?: string
+          plan_content?: string
+        }
+        Update: {
+          created_at?: string
+          exam_date?: string
+          hours_per_day?: number
+          id?: string
+          plan_content?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           duration_minutes: number | null

@@ -6,8 +6,12 @@ import Dashboard from "@/components/Dashboard";
 import SyllabusInput from "@/components/SyllabusInput";
 import LearningLab from "@/components/LearningLab";
 import ReviseMode from "@/components/ReviseMode";
+import ExamSimulator from "@/components/ExamSimulator";
+import ProgressAnalytics from "@/components/ProgressAnalytics";
+import StudyPlanner from "@/components/StudyPlanner";
+import NotesBookmarks from "@/components/NotesBookmarks";
 
-type View = "dashboard" | "syllabus" | "learn" | "revise";
+type View = "dashboard" | "syllabus" | "learn" | "revise" | "exam" | "analytics" | "planner" | "notes";
 
 const Index = () => {
   const [view, setView] = useState<View>("dashboard");
@@ -33,6 +37,10 @@ const Index = () => {
   const handleSelectTopic = (id: string) => {
     setSelectedTopicId(id);
     setView("learn");
+  };
+
+  const handleSelectTopicForNotes = (id: string) => {
+    setSelectedTopicId(id);
   };
 
   return (
@@ -69,6 +77,22 @@ const Index = () => {
         )}
         {view === "revise" && (
           <ReviseMode topics={topics} onSelectTopic={handleSelectTopic} />
+        )}
+        {view === "exam" && (
+          <ExamSimulator topics={topics} />
+        )}
+        {view === "analytics" && (
+          <ProgressAnalytics topics={topics} />
+        )}
+        {view === "planner" && (
+          <StudyPlanner topics={topics} />
+        )}
+        {view === "notes" && (
+          <NotesBookmarks
+            topics={topics}
+            selectedTopicId={selectedTopicId}
+            onSelectTopic={handleSelectTopicForNotes}
+          />
         )}
       </main>
     </div>
