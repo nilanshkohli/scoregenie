@@ -26,6 +26,8 @@ import {
   addTopic,
   deleteTopic,
   StudyPlan,
+  ExamResult,
+  fetchExamResults,
 } from "@/lib/api";
 import { toast } from "sonner";
 
