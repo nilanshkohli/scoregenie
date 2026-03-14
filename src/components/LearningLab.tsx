@@ -12,7 +12,7 @@ import {
   streamExplanation,
 } from "@/lib/api";
 import { toast } from "sonner";
-import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X } from "lucide-react";
+import { Send, CheckCircle, AlertCircle, XCircle, Loader2, ChevronRight, RotateCcw, Check, X, ArrowRight } from "lucide-react";
 
 type Props = {
   topic: Topic;
