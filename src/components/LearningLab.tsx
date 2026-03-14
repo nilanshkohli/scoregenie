@@ -33,7 +33,7 @@ export default function LearningLab({ topic, onTopicUpdate }: Props) {
   const [practiceQuestions, setPracticeQuestions] = useState<PracticeQuestion[]>([]);
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [practiceLoading, setPracticeLoading] = useState(false);
+  const [userAnswer, setUserAnswer] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const startTimeRef = useRef<number>(Date.now());
 
