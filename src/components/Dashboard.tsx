@@ -1,7 +1,8 @@
 import { Topic } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, BookOpen, Target, Zap } from "lucide-react";
+import { Clock, BookOpen, Target, Zap, Brain } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   topics: Topic[];
