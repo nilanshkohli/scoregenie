@@ -98,9 +98,22 @@ export default function ExamSimulator({ topics, targetScore }: Props) {
 
     for (const topic of suggestedTopics) {
       let fullResponse = "";
+
+      // Adjust difficulty based on target score
+      let difficultyInstruction = "";
+      if (targetScore <= 60) {
+        difficultyInstruction = `Focus on basic recall, definitions, and straightforward application questions. Keep questions simple to build confidence. Avoid tricky or multi-step problems.`;
+      } else if (targetScore <= 80) {
+        difficultyInstruction = `Mix basic and intermediate questions. Include some application-based questions that test understanding, not just memorization.`;
+      } else {
+        difficultyInstruction = `Focus on conceptual, analytical, and challenging questions. Include multi-step problems, application of concepts to new scenarios, and questions that test deep understanding. Avoid simple recall questions.`;
+      }
+
       const msg: Msg = {
         role: "user",
         content: `Generate exactly ${questionsPerTopic} exam questions for "${topic.name}". Mix objective (MCQ) and subjective types.
+
+${difficultyInstruction}
 
 Return ONLY in this format:
 
