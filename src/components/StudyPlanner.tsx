@@ -269,9 +269,6 @@ Format as clear, actionable markdown.`,
                 </p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1.5">
-              {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left · ${topics.length} topics` : `${topics.length} topics`}
-            </p>
           </Card>
         </div>
       )}
