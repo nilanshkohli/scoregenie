@@ -214,7 +214,7 @@ Format as clear, actionable markdown.`,
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Study Details</span>
             </div>
             <div className="space-y-1">
-              <p className="text-lg font-bold text-foreground truncate">{subjectName || "Unnamed Subject"}</p>
+              <p className="text-lg font-bold text-foreground truncate">{subjectName || "Physics"}</p>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>Target: <span className="font-medium text-foreground">{targetScore || 80}%</span></span>
                 <span>•</span>
