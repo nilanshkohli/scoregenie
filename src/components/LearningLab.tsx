@@ -337,6 +337,15 @@ CORRECT: [A/B/C/D]`,
       });
       onTopicUpdate();
       toast.success("Confidence saved!");
+
+      // Check if all topics are now completed
+      if ((level === "confident" || level === "somewhat") && onAllCompleted) {
+        const otherAllCompleted = topics.filter(t => t.id !== topic.id).every(t => t.is_completed);
+        if (otherAllCompleted) {
+          toast.success("All topics completed! Moving to revision...");
+          setTimeout(() => onAllCompleted(), 1500);
+        }
+      }
     } catch {
       toast.error("Failed to save confidence");
     }
