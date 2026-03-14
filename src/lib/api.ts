@@ -75,6 +75,115 @@ export async function saveMessage(topicId: string, role: string, content: string
   return data as ChatMessage;
 }
 
+// Notes
+export type Note = {
+  id: string;
+  topic_id: string;
+  content: string;
+  is_bookmarked: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function fetchNote(topicId: string): Promise<Note | null> {
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("topic_id", topicId)
+    .maybeSingle();
+  if (error) throw error;
+  return data as Note | null;
+}
+
+export async function upsertNote(topicId: string, content: string, isBookmarked?: boolean): Promise<Note> {
+  const existing = await fetchNote(topicId);
+  if (existing) {
+    const { data, error } = await supabase
+      .from("notes")
+      .update({ content, ...(isBookmarked !== undefined ? { is_bookmarked: isBookmarked } : {}) })
+      .eq("id", existing.id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Note;
+  } else {
+    const { data, error } = await supabase
+      .from("notes")
+      .insert({ topic_id: topicId, content, is_bookmarked: isBookmarked ?? false })
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Note;
+  }
+}
+
+export async function fetchAllNotes(): Promise<Note[]> {
+  const { data, error } = await supabase
+    .from("notes")
+    .select("*")
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Note[];
+}
+
+// Exam results
+export type ExamResult = {
+  id: string;
+  total_questions: number;
+  correct_answers: number;
+  score_percentage: number;
+  duration_seconds: number;
+  topic_ids: string[];
+  created_at: string;
+};
+
+export async function saveExamResult(result: Omit<ExamResult, "id" | "created_at">): Promise<ExamResult> {
+  const { data, error } = await supabase
+    .from("exam_results")
+    .insert(result)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as ExamResult;
+}
+
+export async function fetchExamResults(): Promise<ExamResult[]> {
+  const { data, error } = await supabase
+    .from("exam_results")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as ExamResult[];
+}
+
+// Study plans
+export type StudyPlan = {
+  id: string;
+  exam_date: string;
+  hours_per_day: number;
+  plan_content: string;
+  created_at: string;
+};
+
+export async function saveStudyPlan(plan: Omit<StudyPlan, "id" | "created_at">): Promise<StudyPlan> {
+  const { data, error } = await supabase
+    .from("study_plans")
+    .insert(plan)
+    .select()
+    .single();
+  if (error) throw error;
+  return data as StudyPlan;
+}
+
+export async function fetchStudyPlans(): Promise<StudyPlan[]> {
+  const { data, error } = await supabase
+    .from("study_plans")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as StudyPlan[];
+}
+
 export type Msg = { role: "user" | "assistant"; content: string };
 
 export async function streamExplanation({
