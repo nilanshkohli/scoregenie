@@ -128,7 +128,7 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
     setPlanContent("");
 
     const daysLeft = Math.max(1, Math.ceil((examDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
-    const hrs = hoursPerDay;
+    const hrs = hoursPerDay ?? Math.round(estimatedRemainingHours / daysLeft * 10) / 10;
     const topicSummary = topics
       .map((t) => `- ${t.name} (${t.marks_weightage} marks, confidence: ${t.confidence || "unrated"}, time spent: ${t.time_spent_minutes}m)`)
       .join("\n");
