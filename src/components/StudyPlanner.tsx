@@ -224,7 +224,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
               <span className="text-xs font-medium text-muted-foreground">Time Remaining</span>
             </div>
             <p className="text-2xl font-bold text-foreground">
-              {hoursRemaining !== null ? `${hoursRemaining.toFixed(0)}h` : "—"}
+              {estimatedRemainingHours > 0 ? `${estimatedRemainingHours.toFixed(0)}h` : "—"}
             </p>
             <p className="text-xs text-muted-foreground">
               {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left` : "Set exam date"}
