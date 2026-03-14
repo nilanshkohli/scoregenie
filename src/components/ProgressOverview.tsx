@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Topic, fetchExamResults, ExamResult } from "@/lib/api";
 import {
-  BarChart3,
   TrendingUp,
   Clock,
   Target,
   BookOpen,
   Trophy,
+  Zap,
 } from "lucide-react";
 
 type Props = {
   topics: Topic[];
 };
 
-export default function ProgressAnalytics({ topics }: Props) {
+export default function ProgressOverview({ topics }: Props) {
   const [examResults, setExamResults] = useState<ExamResult[]>([]);
 
   useEffect(() => {
@@ -25,6 +26,9 @@ export default function ProgressAnalytics({ topics }: Props) {
   const coveredMarks = topics.filter((t) => t.is_completed).reduce((s, t) => s + t.marks_weightage, 0);
   const totalMinutes = topics.reduce((s, t) => s + t.time_spent_minutes, 0);
   const completedCount = topics.filter((t) => t.is_completed).length;
+  const hours = totalMinutes / 60;
+  const efficiency = hours > 0 ? (coveredMarks / hours).toFixed(1) : "—";
+  const progressPct = totalMarks > 0 ? (coveredMarks / totalMarks) * 100 : 0;
 
   const confidentCount = topics.filter((t) => t.confidence === "confident").length;
   const somewhatCount = topics.filter((t) => t.confidence === "somewhat").length;
@@ -40,28 +44,39 @@ export default function ProgressAnalytics({ topics }: Props) {
     ? Math.round(examResults.reduce((s, r) => s + r.score_percentage, 0) / examResults.length)
     : null;
 
-  // Top 5 topics by time spent
   const topByTime = [...topics].sort((a, b) => b.time_spent_minutes - a.time_spent_minutes).slice(0, 5);
   const maxTime = topByTime[0]?.time_spent_minutes || 1;
 
-  // Weak topics
   const weakTopics = topics.filter((t) => t.confidence === "not_confident" || t.confidence === "somewhat");
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Progress Analytics</h1>
+        <h1 className="text-2xl font-bold text-foreground">Progress</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Detailed insights into your exam preparation
+          Your exam preparation at a glance
         </p>
       </div>
 
       {topics.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Start studying to see your analytics!</p>
+          <p className="text-muted-foreground">Start studying to see your progress!</p>
         </Card>
       ) : (
         <>
+          {/* Efficiency Hero */}
+          <Card className="p-6 border-primary/20">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Marks per Hour</p>
+                <p className="text-4xl font-extrabold text-primary tracking-tight">{efficiency}</p>
+              </div>
+            </div>
+          </Card>
+
           {/* Overview stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card className="p-4">
@@ -101,6 +116,17 @@ export default function ProgressAnalytics({ topics }: Props) {
               <p className="text-xs text-muted-foreground">{examResults.length} exam{examResults.length !== 1 ? "s" : ""} taken</p>
             </Card>
           </div>
+
+          {/* Syllabus Coverage */}
+          <Card className="p-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-foreground">Syllabus Coverage</span>
+              <span className="text-sm text-muted-foreground">
+                {coveredMarks}/{totalMarks} marks ({progressPct.toFixed(0)}%)
+              </span>
+            </div>
+            <Progress value={progressPct} className="h-2" />
+          </Card>
 
           {/* Confidence Distribution */}
           <Card className="p-5">

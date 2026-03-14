@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Topic,
   Msg,
@@ -36,8 +35,6 @@ type ExamState = "setup" | "running" | "results";
 
 export default function ExamSimulator({ topics }: Props) {
   const [state, setState] = useState<ExamState>("setup");
-  const [numQuestions, setNumQuestions] = useState("10");
-  const [timeLimitMin, setTimeLimitMin] = useState("15");
   const [questions, setQuestions] = useState<ExamQuestion[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>({});
@@ -47,6 +44,22 @@ export default function ExamSimulator({ topics }: Props) {
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
+
+  // Auto-suggest: pick topics based on confidence (weak first, then somewhat, then unrated)
+  const suggestedTopics = [...topics]
+    .sort((a, b) => {
+      const score = (t: Topic) => {
+        if (t.confidence === "not_confident") return 0;
+        if (t.confidence === "somewhat") return 1;
+        if (!t.confidence) return 2;
+        return 3;
+      };
+      return score(a) - score(b) || b.marks_weightage - a.marks_weightage;
+    })
+    .slice(0, Math.min(5, topics.length));
+
+  const suggestedQuestionCount = Math.max(5, Math.min(suggestedTopics.length * 2, 15));
+  const suggestedTimeMin = Math.ceil(suggestedQuestionCount * 1.5);
 
   // Timer
   useEffect(() => {
@@ -71,23 +84,18 @@ export default function ExamSimulator({ topics }: Props) {
   };
 
   const startExam = async () => {
-    if (topics.length === 0) {
+    if (suggestedTopics.length === 0) {
       toast.error("No topics available");
       return;
     }
     setLoading(true);
-    const count = Math.min(parseInt(numQuestions) || 10, 20);
-    const time = (parseInt(timeLimitMin) || 15) * 60;
+    const count = suggestedQuestionCount;
+    const time = suggestedTimeMin * 60;
 
-    // Pick random topics for questions
-    const shuffled = [...topics].sort(() => Math.random() - 0.5);
-    const selectedTopics = shuffled.slice(0, Math.min(count, shuffled.length));
-
-    // Generate questions for each topic
+    const questionsPerTopic = Math.ceil(count / suggestedTopics.length);
     const allQuestions: ExamQuestion[] = [];
-    const questionsPerTopic = Math.ceil(count / selectedTopics.length);
 
-    for (const topic of selectedTopics) {
+    for (const topic of suggestedTopics) {
       let fullResponse = "";
       const msg: Msg = {
         role: "user",
@@ -129,7 +137,6 @@ ANSWER: [answer]`,
       return;
     }
 
-    // Shuffle and limit
     const finalQuestions = allQuestions
       .sort(() => Math.random() - 0.5)
       .slice(0, count);
@@ -233,14 +240,14 @@ ANSWER: [answer]`,
     return q.options.findIndex((o) => o === q.answer);
   };
 
-  // SETUP
+  // SETUP - auto-suggested exam
   if (state === "setup") {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Exam Simulator</h1>
+          <h1 className="text-2xl font-bold text-foreground">Mock Exam</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Take a timed mock test across your syllabus
+            Auto-generated test based on your study plan and weak areas
           </p>
         </div>
 
@@ -249,29 +256,41 @@ ANSWER: [answer]`,
             <p className="text-muted-foreground">Add topics to your syllabus first!</p>
           </Card>
         ) : (
-          <Card className="p-6 space-y-4">
-            <div>
-              <label className="text-sm font-medium text-foreground">Number of Questions</label>
-              <Input
-                type="number"
-                value={numQuestions}
-                onChange={(e) => setNumQuestions(e.target.value)}
-                min={3}
-                max={20}
-                className="mt-1.5"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground">Time Limit (minutes)</label>
-              <Input
-                type="number"
-                value={timeLimitMin}
-                onChange={(e) => setTimeLimitMin(e.target.value)}
-                min={5}
-                max={120}
-                className="mt-1.5"
-              />
-            </div>
+          <div className="space-y-4">
+            {/* Suggested exam info */}
+            <Card className="p-5 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Suggested Exam</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-accent/50">
+                  <p className="text-xs text-muted-foreground">Questions</p>
+                  <p className="text-lg font-bold text-foreground">{suggestedQuestionCount}</p>
+                </div>
+                <div className="p-3 rounded-lg bg-accent/50">
+                  <p className="text-xs text-muted-foreground">Time Limit</p>
+                  <p className="text-lg font-bold text-foreground">{suggestedTimeMin} min</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Topics covered (prioritized by weakness):</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {suggestedTopics.map((t) => (
+                    <span
+                      key={t.id}
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        t.confidence === "not_confident"
+                          ? "bg-destructive/10 text-destructive"
+                          : t.confidence === "somewhat"
+                          ? "bg-warning/10 text-warning"
+                          : "bg-accent text-accent-foreground"
+                      }`}
+                    >
+                      {t.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Card>
+
             <Button onClick={startExam} disabled={loading} className="w-full" size="lg">
               {loading ? (
                 <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Questions...</>
@@ -279,7 +298,7 @@ ANSWER: [answer]`,
                 <><Play className="h-5 w-5 mr-2" /> Start Exam</>
               )}
             </Button>
-          </Card>
+          </div>
         )}
       </div>
     );
@@ -374,7 +393,6 @@ ANSWER: [answer]`,
 
   return (
     <div className="flex flex-col h-full max-w-2xl mx-auto">
-      {/* Header with timer */}
       <div className="flex items-center justify-between py-3 px-1 shrink-0">
         <div>
           <h2 className="text-lg font-bold text-foreground">Mock Exam</h2>
@@ -395,7 +413,6 @@ ANSWER: [answer]`,
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="h-1 bg-border rounded-full mx-1 mb-4">
         <div
           className="h-full bg-primary rounded-full transition-all"
@@ -422,7 +439,6 @@ ANSWER: [answer]`,
               </div>
             </Card>
 
-            {/* Objective options */}
             {currentQ.type === "objective" && currentQ.options && (
               <div className="space-y-2">
                 {currentQ.options.map((opt, i) => {
@@ -463,7 +479,6 @@ ANSWER: [answer]`,
               </div>
             )}
 
-            {/* Subjective */}
             {currentQ.type === "subjective" && (
               <div className="space-y-3">
                 <textarea
@@ -481,7 +496,6 @@ ANSWER: [answer]`,
               </div>
             )}
 
-            {/* Navigation */}
             <div className="flex justify-between pt-2">
               <Button
                 variant="outline"
@@ -501,7 +515,6 @@ ANSWER: [answer]`,
               )}
             </div>
 
-            {/* Question navigator */}
             <div className="flex flex-wrap gap-1.5 justify-center pt-2">
               {questions.map((_, i) => (
                 <button
