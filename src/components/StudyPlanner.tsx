@@ -245,12 +245,12 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="h-4 w-4 text-primary" />
-                <span className="text-xs font-medium text-muted-foreground">Coverage</span>
+                <span className="text-xs font-medium text-muted-foreground">Score Potential</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
                 {totalMarks > 0 ? Math.round(progressPct) : 0}%
               </p>
-              <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} marks</p>
+              <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-1">
