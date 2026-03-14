@@ -100,6 +100,8 @@ const Index = () => {
             onRefresh={refresh}
             subjectName={subjectName}
             onSubjectNameChange={setSubjectName}
+            targetScore={targetScore}
+            onTargetScoreChange={setTargetScore}
           />
         )}
         {view === "learn" && selectedTopic && (
