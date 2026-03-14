@@ -128,7 +128,8 @@ const Index = () => {
             onRevisionComplete={() => setView("exam")}
           />
         )}
-        {view === "exam" && <ExamSimulator topics={topics} />}
+        {view === "exam" && <ExamSimulator topics={topics} targetScore={parseInt(targetScore) || 80} />}
+        {view === "group" && <GroupStudy />}
       </main>
     </div>
   );
