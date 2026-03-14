@@ -329,7 +329,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             <Input
               type="number"
               value={targetScore}
-              onChange={(e) => setTargetScore(e.target.value)}
+              onChange={(e) => onTargetScoreChange(e.target.value)}
               min={1}
               max={100}
             />
