@@ -189,6 +189,10 @@ BACK6: [answer/explanation]`,
       // Session complete
       setState("queue");
       toast.success(`Revision complete! Reviewed ${cardsReviewed + 1} cards across ${topicsCompleted + 1} topics.`);
+      if (onRevisionComplete) {
+        toast.success("Moving to Test Mode...");
+        setTimeout(() => onRevisionComplete(), 1500);
+      }
     }
   };
 
