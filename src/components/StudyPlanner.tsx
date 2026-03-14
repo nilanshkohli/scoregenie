@@ -263,7 +263,7 @@ Format as clear, actionable markdown.`,
               </div>
               <div className="h-8 w-px bg-border" />
               <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Remaining</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Expected TAT</p>
                 <p className="text-xl font-bold text-foreground">
                   {estimatedRemainingHours > 0 ? `${estimatedRemainingHours.toFixed(0)}h` : "—"}
                 </p>
