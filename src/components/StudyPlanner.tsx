@@ -264,13 +264,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             </Card>
           </div>
 
-          <Card className="p-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-foreground">Score Potential</span>
-              <span className="text-sm text-muted-foreground">{progressPct.toFixed(0)}%</span>
-            </div>
-            <Progress value={progressPct} className="h-2" />
-          </Card>
         </>
       )}
 
@@ -412,6 +405,19 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
           </div>
         </div>
 
+        {/* Current plan displayed above generate button */}
+        {planContent && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              Current Study Plan
+            </h3>
+            <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0 mb-4 border border-border rounded-lg p-4 max-h-64 overflow-y-auto">
+              <ReactMarkdown>{planContent}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
         <Button onClick={generatePlan} disabled={loading || !examDate} className="w-full" size="lg">
           {loading ? (
             <><Loader2 className="h-5 w-5 animate-spin mr-2" /> Generating Plan...</>
@@ -422,19 +428,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
           )}
         </Button>
       </Card>
-
-      {/* Generated plan */}
-      {planContent && (
-        <Card className="p-6">
-          <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" />
-            Your Study Plan
-          </h3>
-          <div className="prose prose-sm max-w-none text-foreground [&>*:first-child]:mt-0">
-            <ReactMarkdown>{planContent}</ReactMarkdown>
-          </div>
-        </Card>
-      )}
 
       {/* Confidence & detailed progress (collapsible) */}
       {topics.length > 0 && (
