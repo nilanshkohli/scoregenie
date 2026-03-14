@@ -345,6 +345,7 @@ A5: [answer text]`,
                       onClick={() => {
                         setCurrentQIndex((i) => i + 1);
                         setShowAnswer(false);
+                        setUserAnswer("");
                       }}
                     >
                       Next Question <ChevronRight className="h-4 w-4 ml-1" />
