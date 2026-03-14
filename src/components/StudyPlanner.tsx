@@ -245,12 +245,12 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Target className="h-4 w-4 text-primary" />
-                <span className="text-xs font-medium text-muted-foreground">Coverage</span>
+                <span className="text-xs font-medium text-muted-foreground">Score Potential</span>
               </div>
               <p className="text-2xl font-bold text-foreground">
                 {totalMarks > 0 ? Math.round(progressPct) : 0}%
               </p>
-              <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} marks</p>
+              <p className="text-xs text-muted-foreground">{coveredMarks}/{totalMarks} covered</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-1">
@@ -268,7 +268,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
                 <span className="text-xs font-medium text-muted-foreground">Efficiency</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{efficiency}</p>
-              <p className="text-xs text-muted-foreground">marks/hour</p>
+              <p className="text-xs text-muted-foreground">score potential/hr</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-1">
@@ -282,7 +282,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
 
           <Card className="p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-foreground">Syllabus Coverage</span>
+              <span className="text-sm font-medium text-foreground">Score Potential</span>
               <span className="text-sm text-muted-foreground">{progressPct.toFixed(0)}%</span>
             </div>
             <Progress value={progressPct} className="h-2" />
