@@ -109,6 +109,7 @@ const Index = () => {
             onNextTopic={handleNextTopic}
             hasNextTopic={topics.length > 1}
             onSelectTopic={(id) => setSelectedTopicId(id)}
+            onAllCompleted={() => { refresh(); setView("revise"); }}
           />
         )}
         {view === "learn" && !selectedTopic && topics.length === 0 && (
@@ -117,7 +118,11 @@ const Index = () => {
           </div>
         )}
         {view === "revise" && (
-          <ReviseMode topics={topics} onSelectTopic={(id) => { setSelectedTopicId(id); setView("learn"); }} />
+          <ReviseMode
+            topics={topics}
+            onSelectTopic={(id) => { setSelectedTopicId(id); setView("learn"); }}
+            onRevisionComplete={() => setView("exam")}
+          />
         )}
         {view === "exam" && <ExamSimulator topics={topics} />}
       </main>
