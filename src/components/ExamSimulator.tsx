@@ -245,7 +245,7 @@ ANSWER: [answer]`,
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Mock Exam</h1>
+          <h1 className="text-2xl font-bold text-foreground">Test Mode</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Auto-generated test based on your study plan and weak areas
           </p>
