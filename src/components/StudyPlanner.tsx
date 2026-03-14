@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { format, differenceInDays } from "date-fns";
 import {
   CalendarIcon, Loader2, Sparkles, Clock,
