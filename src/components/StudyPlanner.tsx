@@ -268,7 +268,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
                 <span className="text-xs font-medium text-muted-foreground">Efficiency</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{efficiency}</p>
-              <p className="text-xs text-muted-foreground">marks/hour</p>
+              <p className="text-xs text-muted-foreground">score potential/hr</p>
             </Card>
             <Card className="p-4">
               <div className="flex items-center gap-2 mb-1">
