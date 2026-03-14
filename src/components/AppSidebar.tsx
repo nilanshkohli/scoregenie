@@ -48,7 +48,7 @@ export default function AppSidebar({
     >
       <div className="flex items-center justify-between p-3 border-b border-border">
         {!collapsed && (
-          <span className="text-lg font-bold text-primary tracking-tight">ExamAce</span>
+          <span className="text-lg font-bold text-primary tracking-tight">Score Genie</span>
         )}
         <Button
           variant="ghost"
