@@ -208,6 +208,20 @@ Format as clear, actionable markdown.`,
       {/* Progress stats */}
       {topics.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {/* Subject & Exam Info Card */}
+          <Card className="p-4 col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Study Details</span>
+            </div>
+            <div className="space-y-1">
+              <p className="text-lg font-bold text-foreground truncate">{subjectName || "Unnamed Subject"}</p>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>Target: <span className="font-medium text-foreground">{targetScore || 80}%</span></span>
+                <span>•</span>
+                <span>Exam: {examDate ? format(examDate, "MMM d") : "Not set"}</span>
+              </div>
+            </div>
+          </Card>
           <Card className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Target className="h-4 w-4 text-primary" />
@@ -228,7 +242,7 @@ Format as clear, actionable markdown.`,
             </p>
             <p className="text-xs text-muted-foreground">{topics.length} topics</p>
           </Card>
-          <Card className="p-4">
+          <Card className="p-4 col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-1">
               <Timer className="h-4 w-4 text-destructive" />
               <span className="text-xs font-medium text-muted-foreground">Time Remaining</span>
