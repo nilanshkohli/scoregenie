@@ -35,7 +35,7 @@ type Flashcard = {
 
 type RevisionState = "queue" | "session";
 
-export default function ReviseMode({ topics, onSelectTopic }: Props) {
+export default function ReviseMode({ topics, onSelectTopic, onRevisionComplete }: Props) {
   const [state, setState] = useState<RevisionState>("queue");
   const [sessionTopics, setSessionTopics] = useState<Topic[]>([]);
   const [currentTopicIdx, setCurrentTopicIdx] = useState(0);
