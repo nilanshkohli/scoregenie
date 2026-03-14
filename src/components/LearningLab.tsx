@@ -22,6 +22,7 @@ type Props = {
   onNextTopic?: () => void;
   hasNextTopic?: boolean;
   onSelectTopic: (id: string) => void;
+  onAllCompleted?: () => void;
 };
 
 type PracticeQuestion = {
