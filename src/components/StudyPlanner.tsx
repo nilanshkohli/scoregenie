@@ -36,11 +36,12 @@ type Props = {
   onRefresh: () => void;
   subjectName: string;
   onSubjectNameChange: (name: string) => void;
+  targetScore: string;
+  onTargetScoreChange: (score: string) => void;
 };
 
-export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange }: Props) {
+export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectName, onSubjectNameChange, targetScore, onTargetScoreChange }: Props) {
   const [examDate, setExamDate] = useState<Date>();
-  const [targetScore, setTargetScore] = useState("80");
   const [loading, setLoading] = useState(false);
   const [planContent, setPlanContent] = useState("");
   const [savedPlans, setSavedPlans] = useState<StudyPlan[]>([]);
@@ -70,19 +71,19 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
   const totalMinutes = topics.reduce((s, t) => s + t.time_spent_minutes, 0);
   const progressPct = totalMarks > 0 ? (coveredMarks / totalMarks) * 100 : 0;
 
-  // Smart hours/day suggestion
+  // Progress-based calculations
   const hoursInvested = totalMinutes / 60;
   const daysLeft = examDate ? Math.max(1, differenceInDays(examDate, new Date())) : null;
   const target = Math.min(100, Math.max(1, parseInt(targetScore) || 80));
-  const estimatedTotalHours = Math.max(1, (topics.length * 0.67 * (target / 70)) - hoursInvested);
-  const suggestedHoursPerDay = daysLeft !== null
-    ? Math.min(8, Math.max(1, Math.round(estimatedTotalHours / daysLeft * 10) / 10))
-    : 3;
-  const hoursPerDay = suggestedHoursPerDay;
 
-  // Time remaining calculation
-  const totalHoursAvailable = daysLeft !== null ? daysLeft * hoursPerDay : null;
-  const hoursRemaining = totalHoursAvailable !== null ? Math.max(0, totalHoursAvailable - hoursInvested) : null;
+  // Dynamic time remaining: based on how much progress is left relative to target
+  const progressTowardTarget = totalMarks > 0 ? Math.min(1, progressPct / target) : 0;
+  const estimatedTotalHours = Math.max(1, topics.length * 0.67 * (target / 70));
+  const estimatedRemainingHours = Math.max(0, estimatedTotalHours * (1 - progressTowardTarget));
+  const hoursPerDay = daysLeft !== null
+    ? Math.min(8, Math.max(0.5, Math.round(estimatedRemainingHours / daysLeft * 10) / 10))
+    : null;
+
 
   const handleAddTopic = async () => {
     if (!topicName.trim()) { toast.error("Enter a topic name"); return; }
@@ -127,7 +128,7 @@ export default function StudyPlanner({ topics, onNavigate, onRefresh, subjectNam
     setPlanContent("");
 
     const daysLeft = Math.max(1, Math.ceil((examDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
-    const hrs = hoursPerDay;
+    const hrs = hoursPerDay ?? Math.round(estimatedRemainingHours / daysLeft * 10) / 10;
     const topicSummary = topics
       .map((t) => `- ${t.name} (${t.marks_weightage} marks, confidence: ${t.confidence || "unrated"}, time spent: ${t.time_spent_minutes}m)`)
       .join("\n");
@@ -161,7 +162,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
         onDelta: (chunk) => { fullResponse += chunk; setPlanContent(fullResponse); },
         onDone: () => { setLoading(false); },
       });
-      const saved = await saveStudyPlan({ exam_date: format(examDate, "yyyy-MM-dd"), hours_per_day: hrs, plan_content: fullResponse });
+      const saved = await saveStudyPlan({ exam_date: format(examDate, "yyyy-MM-dd"), hours_per_day: hrs ?? 3, plan_content: fullResponse });
       setSavedPlans((prev) => [saved, ...prev]);
       toast.success("Study plan saved!");
     } catch (e: any) {
@@ -223,7 +224,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
               <span className="text-xs font-medium text-muted-foreground">Time Remaining</span>
             </div>
             <p className="text-2xl font-bold text-foreground">
-              {hoursRemaining !== null ? `${hoursRemaining.toFixed(0)}h` : "—"}
+              {estimatedRemainingHours > 0 ? `${estimatedRemainingHours.toFixed(0)}h` : "—"}
             </p>
             <p className="text-xs text-muted-foreground">
               {daysLeft !== null ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left` : "Set exam date"}
@@ -328,7 +329,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
             <Input
               type="number"
               value={targetScore}
-              onChange={(e) => setTargetScore(e.target.value)}
+              onChange={(e) => onTargetScoreChange(e.target.value)}
               min={1}
               max={100}
             />
@@ -356,16 +357,6 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
                 />
               </PopoverContent>
             </Popover>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Suggested Hours/Day</label>
-            <div className="flex items-center gap-2 h-10 px-3 rounded-md border border-border bg-muted/50">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">
-                {examDate && topics.length > 0 ? `${hoursPerDay}h` : "—"}
-              </span>
-              <span className="text-xs text-muted-foreground ml-auto">auto-calculated</span>
-            </div>
           </div>
         </div>
 

@@ -6,8 +6,9 @@ import LearningLab from "@/components/LearningLab";
 import ReviseMode from "@/components/ReviseMode";
 import ExamSimulator from "@/components/ExamSimulator";
 import StudyPlanner from "@/components/StudyPlanner";
+import GroupStudy from "@/components/GroupStudy";
 
-type View = "planner" | "learn" | "revise" | "exam";
+type View = "planner" | "learn" | "revise" | "exam" | "group";
 
 function getNextTopic(topics: Topic[]): Topic | null {
   if (topics.length === 0) return null;
@@ -32,6 +33,7 @@ const Index = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [subjectName, setSubjectName] = useState("");
+  const [targetScore, setTargetScore] = useState("80");
   const queryClient = useQueryClient();
 
   const { data: topics = [] } = useQuery({
@@ -98,6 +100,8 @@ const Index = () => {
             onRefresh={refresh}
             subjectName={subjectName}
             onSubjectNameChange={setSubjectName}
+            targetScore={targetScore}
+            onTargetScoreChange={setTargetScore}
           />
         )}
         {view === "learn" && selectedTopic && (
@@ -124,7 +128,8 @@ const Index = () => {
             onRevisionComplete={() => setView("exam")}
           />
         )}
-        {view === "exam" && <ExamSimulator topics={topics} />}
+        {view === "exam" && <ExamSimulator topics={topics} targetScore={parseInt(targetScore) || 80} />}
+        {view === "group" && <GroupStudy />}
       </main>
     </div>
   );
