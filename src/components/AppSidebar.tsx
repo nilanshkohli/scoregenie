@@ -1,4 +1,4 @@
-import { BookOpen, ChevronLeft, ChevronRight, Brain, ClipboardList, Calendar } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, Brain, ClipboardList, LayoutDashboard } from "lucide-react";
 import { Topic } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,8 @@ type Props = {
 };
 
 const navItems: { view: View; label: string; icon: typeof BookOpen }[] = [
-  { view: "planner", label: "Study Plan", icon: Calendar },
+  { view: "planner", label: "Prep Dashboard", icon: LayoutDashboard },
+  { view: "learn", label: "Learn", icon: BookOpen },
   { view: "revise", label: "Revise", icon: Brain },
   { view: "exam", label: "Test Mode", icon: ClipboardList },
 ];
@@ -90,7 +91,7 @@ export default function AppSidebar({
           )}
 
           <p className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Learn
+            Topics
           </p>
           <div className="flex flex-col gap-0.5">
             {topics.map((t) => (

@@ -184,7 +184,7 @@ Format as a clear, actionable markdown schedule with days, topics, and time allo
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Study Plan & Progress</h1>
+        <h1 className="text-2xl font-bold text-foreground">Prep Dashboard</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Your preparation hub — plan, track progress, and jump into study modes
         </p>
